@@ -1,0 +1,88 @@
+% SIAM Article Template
+\documentclass[review]{siamart1116}
+\usepackage{lipsum}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{algorithmic}
+\DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\numberwithin{theorem}{section}
+
+% Declare title and authors, without \thanks
+\newcommand{\TheTitle}{Projected Quasi-Newton-Krylov for Reaction-Diffusion Equations} 
+\newcommand{\TheAuthors}{T. Valentinova Avramova, P.C. Africa, A. Scotti, L. Formaggia and C. de Falco}
+
+% Sets running headers as well as PDF title and authors
+\headers{\TheTitle}{\TheAuthors}
+
+\title{{\TheTitle}\thanks{Submitted to the editors DATE.
+\funding{FONDI DA RINGRAZIARE}}}
+
+\newcommand{\MOXaddress}{MOX - Modeling and Scientific Computing, Dipartimento di Matematica, Politecnico di Milano, P.zza L. Da Vinci 32, 20133 - Milano - ITALY}
+% Authors: full names plus addresses.
+\author{
+  Temenuzhka Valentinova Avramova\thanks{\MOXaddress (\email{temenuzhka.avramova@mail.polimi.it})}
+ \and
+  Pasquale Claudio Africa\thanks{\MOXaddress (\email{pasqualeclaudio.africa@polimi.it}).}
+  \and
+  Anna Scotti\thanks{\MOXaddress (\email{anna.scotti@polimi.it}).}
+  \and
+  Carlo de Falco
+  \thanks{\MOXaddress (\email{carlo.defalco@polimi.it}).}
+  \and
+  Luca Formaggia
+  \thanks{\MOXaddress (\email{luca.formaggia@polimi.it}).}
+}
+
+\usepackage{amsopn}
+\DeclareMathOperator{\diag}{diag}
+
+
+% Optional PDF information
+\ifpdf
+\hypersetup{
+  pdftitle={\TheTitle},
+  pdfauthor={\TheAuthors}
+}
+\fi
+
+% FundRef data to be entered by SIAM
+%<funding-group>
+%<award-group>
+%<funding-source>
+%<named-content content-type="funder-name"> 
+%</named-content> 
+%<named-content content-type="funder-identifier"> 
+%</named-content>
+%</funding-source>
+%<award-id> </award-id>
+%</award-group>
+%</funding-group>
+
+\begin{document}
+
+\maketitle
+
+% REQUIRED
+\begin{abstract}
+  We study the application of a projected quasi-Newton-Krylov method to a benchmark parabolic Reaction Diffusion equation.
+\end{abstract}
+
+% REQUIRED
+\begin{keywords}
+  AMR, quadtrees, parallel computing, quasi-Newton, Inexact Newton, Newton-Krylov
+\end{keywords}
+
+% REQUIRED
+\begin{AMS}
+  68Q25, 68R10, 68U05
+\end{AMS}
+
+\section{Introduction}
+
+\section{Review of Variants of the Newton Method}
+
+
+\bibliographystyle{siamplain}
+\bibliography{references}
+\end{document}
