@@ -48,27 +48,43 @@ ss=1;
 load parametri_paper
 load XX %sono le soluzioni del paper x del sistema nonlineare ad ogni iterazione
 load nu_kv %nu_k ricavate dal paper
+nu_k_definitive =  nu_k_vera+0.00001;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ss=1;
+
 nu_k_vera(end+1)=nu_k_vera(end);
 while err>tol && k<22
      k=k+1;
      
      FLAG=direzione_paper(k);
      if FLAG==0 
-         
-         [d, ~, ~, it, ~, duvec] = gmresx (J(x), -F(x),100 , nu_k_vera(ss)+0.00001, 100, [], [], zeros (100, 1));
-        
-          ss=ss+1;
-          m=mm_paper(k+1);
-          lambdap = lambda0n^m;
-          lambda(k)=lambdap;
-          x0=x;
-          x=P(x + lambdap*d);
-          sen_1(k)=1;
-          mm(k)=m;
-         
+         nu_k=nu_k_definitive(ss);
+         [d, ~, ~, it, ~, duvec] = gmresx (J(x), -F(x),100 , nu_k, 100, [], [], zeros (100, 1));
+         ss=ss+1;
+         m=0;
+         while m<(mmax+1)
+            lambdap=lambda0n^m;
+            
+            if (norm(F(P(x + lambdap*d)))<= (1-lambdap*t*(1-nu_k))*norm(F(x)))
+               
+                x0=x;
+                x=P(x + lambdap*d);
+                sen_1(k)=1;
+                FLAG=0;
+                mm(k)=m;
+                m=mmax+1;
+
+            else
+                m=m+1;
+                FLAG=1;
+                    
+                end  
+                
+            
+            end
+            lambda(k)=lambdap;
+
           
      else
            d= -DOMEGA(F(x),J(x));
