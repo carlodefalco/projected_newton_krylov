@@ -1,0 +1,44 @@
+# Created by Octave 4.2.1, Thu Dec 28 18:59:46 2017 CET <nushy@nushy-N550JV>
+# name: verr_paper
+# type: matrix
+# rows: 1
+# columns: 23
+ 3.4873 3.484 3.4813 3.4796 3.4779 3.8144 3.6715 3.6174 3.6087 4.1736 3.7805 3.7395 3.7388 4.9133 3.8563 3.5496 2.3928 0.5615 0.1172 0.0037 2.6134e-06 1.1652e-12 3.8432e-13
+
+
+# name: direzione_paper
+# type: matrix
+# rows: 23
+# columns: 1
+ 0
+ 0
+ 0
+ 0
+ 1
+ 0
+ 0
+ 0
+ 1
+ 0
+ 0
+ 0
+ 1
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+
+
+# name: mm_paper
+# type: matrix
+# rows: 1
+# columns: 23
+ 0 2 3 3 2 1 0 0 2 1 0 0 2 1 0 8 3 0 0 0 0 0 0
+
+
