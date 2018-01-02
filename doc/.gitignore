@@ -3,3 +3,4 @@
 *.out
 projected_newton_krylov.pdf
 *.synctex.gz
+*.thm
