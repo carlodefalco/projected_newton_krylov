@@ -131,28 +131,28 @@ ii2=1;
 psen1=[];
 psen2=[];
 for i=1:k
-  if sen_1(i)>0
-    psen1(ii1)=i;
-    ii1=ii1+1;
+  if (sen_1(i) > 0)
+    psen1(ii1) = i;
+    ii1 = ii1 + 1;
   endif
-  if sen_2(i)>0
-    psen2(ii2)=i;
-    ii2=ii2+1;
+  if (sen_2(i) > 0)
+    psen2(ii2) = i;
+    ii2 = ii2 + 1;
   endif
 endfor
 
 verr_paper2=[verr_paper(1:4), verr_paper(4), verr_paper(5:9), ...
              verr_paper(9), verr_paper(10:12), verr_paper(13), ...
              verr_paper(13:end)];
-plot(verr, 'k')
-ylim([0,max(verr)+1])
+plot (verr, 'k')
+ylim ([0,max(verr)+1])
 hold on 
-plot(verr_paper2, '-og')
+plot (verr_paper2, '-og')
 
-plot(psen1, verr(psen1),'ob' )
-plot(psen2, verr(psen2), 'sr')
-xlabel('ITERAZIONI')
-ylabel('ERRORE')
+plot (psen1, verr(psen1),'ob' )
+plot (psen2, verr(psen2), 'sr')
+xlabel ('ITERAZIONI')
+ylabel ('ERRORE')
 hold off
 
 rm XX                 

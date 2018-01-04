@@ -1,3 +1,3 @@
-function ddO=DOMEGA(f,J)
-    ddO=J'*f;
+function ddO = DOMEGA (f, J)
+  ddO = J' * f;
 endfunction
