@@ -1,4 +1,4 @@
-%% PROVA FINALE
+%% Prova per testare se le eta_k ricavate da "reverse_end.m" funzionano
 
 close all
 clear all
@@ -19,57 +19,46 @@ x00   = x0;
 FLAG  = 0;
 s     = zeros (n, 1);
 
-nu_k  = 0.5; 
+eta_k  = 0.5; 
 s0    = s;
 mmax  = 20;
 
 vincoli(1,1:2)    = [0.8, 2];
 vincoli(2:n,1:2 ) = [(0.5 * ones (n-1, 1)), (2 * ones (n-1, 1))];
 vtol     = zeros (n, 1);
-nu_max   = 0.9;
+eta_max   = 0.9;
 sen_1    = zeros (kmax, 1);
 sen_2    = zeros (kmax, 1);
 lambda0n = 0.5;
 lambda0g = 0.8;   
 mm = mmax * ones (kmax, 1);  
-P  = @(x) min (max (x, vincoli(:, 1)), vincoli(:, 2));
-
-tolleranza_1 = 0.5;
-tolleranza_2 = .1;
-count1  = 0;
-count2  = 0;
-count3  = 0;
-epsilon = 0.1;
 ss      = 1;
 
+P  = @(x) min (max (x, vincoli(:, 1)), vincoli(:, 2));
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%% carico alcuni parametri utili
 load parametri_paper
-load XX    % sono le soluzioni del paper x del sistema nonlineare ad ogni iterazione
-load nu_kv % nu_k ricavate dal paper
-nu_k_definitive =  nu_k_vera + 0.00001;
+load XX            % sono le soluzioni x del paper del sistema nonlineare ad
+                   % ogni iterazione
+load eta_kv        % eta_k ricavate dal paper
+eta_k_definitive =  eta_k_vera + 0.00001;
 
 %% aggiusto le dimensioni
-nu_k_definitive = [nu_k_definitive(1:4), 0, nu_k_definitive(5:8), ...
-                   nu_k_definitive(8), nu_k_definitive(9:11), ...
-                   nu_k_definitive(11), nu_k_definitive(12:end)];
+eta_k_definitive = [eta_k_definitive(1:4), 0, eta_k_definitive(5:8), ...
+                   eta_k_definitive(8), eta_k_definitive(9:11), ...
+                   eta_k_definitive(11), eta_k_definitive(12:end)];
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ss   = 1;
+                   
 FLAG = 0;
-nu_k_vera(end+1) = nu_k_vera(end);
+eta_k_vera(end+1) = eta_k_vera(end);
 
 while ((err > tol) && (k++ < 25))
   
-                                %FLAG=direzione_paper(k);     
   if (FLAG == 0)
     
-    nu_k = nu_k_definitive(ss);
+    eta_k = eta_k_definitive(ss);
     [d, ~, ~, it, ~, duvec] = gmresx (J(x), -F(x), 100,
-                                      nu_k, 100, [], [],
+                                      eta_k, 100, [], [],
                                       zeros (100, 1));
     ss = ss + 1;
     m  = 0;
@@ -78,7 +67,7 @@ while ((err > tol) && (k++ < 25))
       lambdap = lambda0n ^ m;
       
       if (norm (F(P (x + lambdap * d))) <=
-          ((1- lambdap * t * (1 - nu_k)) * norm (F (x))))
+          ((1- lambdap * t * (1 - eta_k)) * norm (F (x))))
         
         x0 = x;
         x = P (x + lambdap * d);
@@ -100,8 +89,9 @@ while ((err > tol) && (k++ < 25))
     
   else
     d = -DOMEGA (F(x), J(x));
-    lambdap = 0.8; %qui non sono riuscita ad aggiungere il ciclo while con la disuguaglianza (6) perchè come si vede dai risultati stampati, 
-                   % questa non è MAI verificata per lambdap=0.8.
+    lambdap = 0.8;  %qui non sono riuscita ad aggiungere il ciclo while con la 
+                    %disuguaglianza (6) perchè, come si vede dai risultati stampati, 
+                    % questa non è MAI verificata per lambdap=0.8.
     lambdac = 0.8;
     printf ("iterazione = %d\n", k)
 
@@ -117,8 +107,7 @@ while ((err > tol) && (k++ < 25))
     sen_2(k) = 1;
     FLAG = 0;
     mm(k) = m;
-    m = mmax + 1;                 
-    
+    m = mmax + 1;
     lambda(k) = lambdap;
     FLAG = 0;
   endif
@@ -166,4 +155,4 @@ xlabel('ITERAZIONI')
 ylabel('ERRORE')
 hold off
 
-                   
+rm XX                 

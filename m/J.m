@@ -1,20 +1,14 @@
-  function M = J(x)
+function M = J(x)
       n=numel(x);
       M=sparse(n, n);
       M(1,1)=2*x(1);
-      
-%      M(1,2)=-1;
-%      M(2,1)=1;
-%      M(2,2)=-1;
-      
-      
       for i=2:n-1
-          M(i,i-1)=1;
-          M(i,i)=-3*x(i)^2;
-          end
+        M(i,i-1)=1;
+        M(i,i)=-3*x(i)^2;
+      endfor
       M(n,n-1)=1;
       M(n,n)=-1;
-      end
+endfunction
 %
 %
 %z = y = x = linspace (0, 1, 20);
