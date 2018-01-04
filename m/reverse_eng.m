@@ -37,7 +37,7 @@ function M = J(x)
 endfunction
     
 
-function ddO=DOMEGA(f,J)
+function ddO=DTHETA(f,J)
     ddO=J'*f;
 endfunction    
 
@@ -113,7 +113,7 @@ while k<24
       
       else
       
-        dd0 = DOMEGA ( F(x0), J(x0) );
+        dd0 = DTHETA ( F(x0), J(x0) );
         lambdap = 0.8 ^ mm_paper(k) ; % sul paper c'è 0.64, ma in realtà sunziona solo con 0.8
         printf('DIREZIONE DEL GRADIENTE CON LAMBDA = %d\n',lambdap);
         x = P( x0 - lambdap*dd0) ;

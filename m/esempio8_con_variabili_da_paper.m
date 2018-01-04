@@ -88,7 +88,7 @@ while ((err > tol) && (k++ < 25))
     lambda(k) = lambdap;
     
   else
-    d = -DOMEGA (F(x), J(x));
+    d = -DTHETA (F(x), J(x));
     lambdap = 0.8;  %qui non sono riuscita ad aggiungere il ciclo while con la 
                     %disuguaglianza (6) perchè, come si vede dai risultati stampati, 
                     % questa non è MAI verificata per lambdap=0.8.
@@ -96,10 +96,10 @@ while ((err > tol) && (k++ < 25))
     printf ("iterazione = %d\n", k)
 
     printf ("lhs della disuguaglianza (6) = %d\n",
-            OMEGA(F (P (x + lambdac*d))) - OMEGA (F (x)))
+            THETA(F (P (x + lambdac*d))) - THETA (F (x)))
 
     printf ("rhs della disuguaglianza (6) = %d\n",
-            sigma * DOMEGA (F (x), J (x))' *
+            sigma * DTHETA (F (x), J (x))' *
             (P (x + lambdac * d) - x))
     
     x0 = x;
@@ -154,5 +154,3 @@ plot (psen2, verr(psen2), 'sr')
 xlabel ('ITERAZIONI')
 ylabel ('ERRORE')
 hold off
-
-rm XX                 
