@@ -26,18 +26,18 @@ endfunction
 
 function JJ = J (x)
   n   = numel (x);
-  d   = [1; 3*x(2:end-1).^2; 1];
+  d   = [2*x(1); -3*x(2:end-1).^2; -1];
   JJ  = sparse (n,n);
-  dm  = [-ones(n-1, 1); 0];
+  dm  = [ones(n-1, 1); 0];
   JJ  = spdiags ([dm, d], -1:0, n, n);
 endfunction 
 
 function r = F (x)
   n          = numel (x);
   r          = zeros (n, 1);
-  r(1)       = x(1)-1;
-  r(2:end-1) = -x(1:end-2) + x(2:end-1).^3;
-  r(end)     = -x(end-1) + x(end);
+  r(1)       = x(1)^2-1;
+  r(2:end-1) = x(1:end-2) - x(2:end-1).^3;
+  r(end)     = x(end-1) - x(end);
 endfunction 
 
 function JJ = Jdr (x, n, A, M)
