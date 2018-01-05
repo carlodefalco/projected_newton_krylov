@@ -102,8 +102,15 @@ while k<24
           disp('NON È STATO TROVATO UN ERRORE UGUALE!!')
           break;
         endif
-        err1(end+1) =  norm(J(x0)*duvec(:,jj)+F(x0));
-        eta_k_vera(end+1) =  err1(end) / verr_paper(k-1);
+      
+        err1(end+1)=norm(J(x0)*duvec(:,jj)+F(x0));      %errore che faccio con la d scelta
+        err2(end+1)=norm(J(x0)*duvec(:,jj-1)+F(x0));    %errore che farei se avessi scelto una d prima della d scelta
+        err3(end+1)=norm(J(x0)*duvec(:,jj+1)+F(x0));    %errore che farei se avessi scelto una d dopo la d scelta
+        eta_k_vera(end+1)=err1(end)/verr_paper(k-1);
+        
+        eta_k2(end+1)=err2(end)/verr_paper(k-1);
+        eta_k3(end+1)=err3(end)/verr_paper(k-1);
+        
         x  =  P (x0 + lambdap*duvec(:,jj)) ;
         x0 =  x ;
         %% XX contiene le soluzioni x di ogni iterazione k
@@ -130,3 +137,6 @@ endwhile
 save XX XX              % XX sono le soluzioni x per ogni iterazione non linare 
 save eta_kv eta_k_vera  % sono le eta_k calcolate col metodo di reverse engineering
 save DD DD              % sono le direzioni d per ogni iterazione nonlineare
+save err2 err2
+save err3 err3
+save err1 err1
