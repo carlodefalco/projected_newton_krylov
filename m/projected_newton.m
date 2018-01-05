@@ -1,6 +1,6 @@
 function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds)
 
-  maxit    = 2000;
+  maxit    = 100;
   errtol   = 1e-12;
   maxdamp  = 20;
   
