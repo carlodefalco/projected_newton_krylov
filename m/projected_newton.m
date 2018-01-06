@@ -1,75 +1,92 @@
-function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds)
-
-  maxit    = 100;
-  errtol   = 1e-12;
-  maxdamp  = 20;
+function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
   
   P        = @(x) min (max (x, bounds (:, 1)), bounds (:, 2));
 
   x        = x0;
   n        = numel (x);
 
-
-  lambda0  = .5;
-  lambda0G = .8;
-  gamma    = .8;
-  etamax   = .9;
-  eta      =  7.65518617913987e-01;
-  eta0     =  7.65518617913987e-01;
-  alpha    =  (1 + sqrt (5)) / 2;
-  t        =  1.0e-4;
-  sigma    =  1.0e-1;
-  flag     =  false;
+  maxit    = opts.maxit;
+  errtol   = opts.errtol;
+  maxdamp  = opts.maxdamp;
+  lambda0  = opts.lambda0;
+  lambda0G = opts.lambda0G;
+  gamma    = opts.gamma;
+  etamax   = opts.etamax;
+  eta0     = opts.eta0;
+  alpha    = opts.alpha;
+  t        = opts.t;
+  sigma    = opts.sigma;
 
   resnew = F (x);
   normresnew = norm (resnew); 
-  
+
+  eta      = eta0;
+  m        = 0;
+  lambda   = lambda0^m;
+  flag     = false;
+
+
+  printf ("%10.10s | \t%10.10s | \t%10.10s | \t%s | \t%10.10s\n",
+          "  Iterates", "    lambda",
+          "     ||F||", "       eta",
+          "      flag");
+
+  printf ("__________________________________________________________________________\n");
+
   for in = 1 : maxit
     
     res     = resnew;
     normres = normresnew;
-    err(in) = normres; 
     jac     = J (x);
-    printf ("%d ", in)
-    if (! flag)
-      ff(in) = flag;
-      if (normres <= errtol)
-        ff(in) = flag;
-        mm(in) = 0;
-        break
-      endif
-      
-      if (in > 1)
-        eta = gamma * (err(in) / err(in-1)) ^ alpha;
-        maxeta = gamma * ee(in-1) ^ alpha;
-        if (maxeta > .1)
-          eta = max (eta, maxeta);
-        endif
-      endif
-      %%eta = eta0 * min (1/(in+1)^alpha, normres/(2*err(1)));
-      ee(in) = eta;
-            
-      d = gmres (jac, - res, n, eta, n, [], [], zeros (size (x)));      
 
-      flag = true;
-      for m = 0 : maxdamp
-        lambda = lambda0 ^ m;
-        xnew = P (x + lambda * d);
-        resnew = F (xnew); 
-        normresnew = norm (resnew);
-        printf ("\tPN %g %g %g\n", normresnew,
-                (1 - t * lambda * (1-eta)), normres)
-        if (normresnew <= ((1 - t * lambda * (1-eta)) * normres))
-          flag = false;
-          x = xnew;
-          break
-        endif
-      endfor
-      ll(in) = lambda;
+    if (normres <= errtol)
+      break
     endif
 
-    if (flag)
-      ff(in) = flag;
+    printf ("%10.5d |\t%10.5g |\t%10.5g |\t%10.5g |\t",
+            in, lambda, normres, eta);
+
+    ee(in)  = eta;
+    err(in) = normres; 
+    ll(in)  = lambda;
+    ff(in)  = flag;
+    mm(in)  = m;
+
+    
+    if (in > 1)
+      eta = gamma * (err(in) / err(in-1)) ^ alpha;
+      eta = min (eta, etamax);
+      %% DISABLE "PRACTICAL SAFEGUARD"
+      %%maxeta = gamma * ee(in) ^ alpha;
+      %%if (maxeta > .1)
+      %%  eta = max (eta, maxeta);
+      %%endif
+    endif
+
+    
+    d = gmres (jac, - res, n, eta, n, [], [], zeros (size (x)));      
+
+    flag = true;
+    for m = 0 : maxdamp
+      lambda = lambda0 ^ m;
+      xnew = P (x + lambda * d);
+      resnew = F (xnew); 
+      normresnew = norm (resnew);
+      if (normresnew <= ((1 - t * lambda * (1-eta)) * normres))
+        flag = false;
+        x = xnew;
+        break
+      endif
+    endfor
+
+    if (! flag)
+
+      printf ("%10.10s\n", "PN")
+      
+    else
+
+      printf ("%10.10s\n","PG")
+      
       d = - jac' * res;
       flag = true;
       for m = 0 : maxdamp 
@@ -77,15 +94,9 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds)
         xnew = P (x + lambda * d);
         resnew = F (xnew);
         normresnew = norm (resnew);
-        printf ("\tPG %g %g %g %g\n", 
-                ((1/2) * normresnew^2), ...
-                ((1/2) * normres^2), ...
-                (sigma * (d' * (x - xnew))), ...
-                ((1/2) * normres^2 -
-                 sigma * (d' * (x - xnew))))
         if ((1/2) * normresnew^2  <=
-            ((1/2) * normres^2 -
-             sigma * (d' * (x - xnew)))
+            ((1/2) * normres^2 +
+             sigma * ((-d)' * (xnew - x)))
             || lambda * (norm (d, inf)) <=
                10 * eps (norm (x, inf)));
           flag = false;
@@ -94,13 +105,10 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds)
         endif
       endfor
             
-      ee(in) = eta;
-      ll(in) = lambda;
     endif
 
     plot (err)
     drawnow
-    mm(in) = m;
 
   endfor
 

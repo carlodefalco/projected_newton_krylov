@@ -1,8 +1,11 @@
 clear all
 close all
 
-[J, F, x0, bounds] = benchmark_problems ("chenetal");
-[x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds);
+benchmarks = {'chenetal', 'chenetal_paper', 'diffreactmonotone', ...
+              'scalarlocmin'};
+choice = menu ('select benchmark', benchmarks);
+[J, F, x0, bounds, opts] = benchmark_problems (benchmarks{choice});
+[x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts);
 
 figure
 plot (x)

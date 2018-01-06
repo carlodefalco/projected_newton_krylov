@@ -1,6 +1,26 @@
-function [jac, res, x0, bounds] = benchmark_problems (pname)
+function [jac, res, x0, bounds, opts] = benchmark_problems (pname)
 
   switch pname
+    case "chenetal_paper"
+      jac = @(x) J(x);
+      res = @(x) F(x);
+      x0          = .9*ones(100,1);
+      x0(21:end)  = .5;      
+      bounds      = [.5*ones(size (x0)), 2*ones(size (x0))];
+      bounds(1,1) = .8;
+      opts.maxit    = 400;
+      opts.errtol   = 1e-12;
+      opts.maxdamp  = 20;
+      opts.lambda0  = .5;
+      opts.lambda0G = .8;
+      opts.gamma    =  1;
+      opts.etamax   = .8;
+      opts.eta0     =  7.65518617913987e-01;
+      opts.alpha    =  2;
+      opts.t        =  1.0e-4;
+      opts.sigma    = -2.575;  %% THIS VALUE IS NOT ALLOWED ACCORDING
+                               %% TO THE PAPER BUT IS REQUIRED TO
+                               %% ACHIEVE CONVERGENCE
     case "chenetal"
       jac = @(x) J(x);
       res = @(x) F(x);
@@ -8,6 +28,18 @@ function [jac, res, x0, bounds] = benchmark_problems (pname)
       x0(21:end)  = .5;      
       bounds      = [.5*ones(size (x0)), 2*ones(size (x0))];
       bounds(1,1) = .8;
+      opts.maxit    = 400;
+      opts.errtol   = 1e-12;
+      opts.maxdamp  = 20;
+      opts.lambda0  = .5;
+      opts.lambda0G = .8;
+      opts.gamma    =  1;
+      opts.etamax   = .8;
+      opts.eta0     =  7.65518617913987e-01;
+      opts.alpha    =  2;
+      opts.t        =  1.0e-4;
+      opts.sigma    =  1.0e-4;  
+  
     case "diffreactmonotone"
       pkg load bim msh fpl
       n = 102;
@@ -18,6 +50,38 @@ function [jac, res, x0, bounds] = benchmark_problems (pname)
       res = @(x) Fdr (x, n, A, M);
       x0 = zeros (n, 1);
       bounds      = [zeros(size (x0)), 2*ones(size (x0))];
+      opts.maxit    = 100;
+      opts.errtol   = 1e-12;
+      opts.maxdamp  = 20;
+      opts.lambda0  = .5;
+      opts.lambda0G = .8;
+      opts.gamma    =  1;
+      opts.etamax   = .8;
+      opts.eta0     = .8;
+      opts.alpha    =  2;
+      opts.t        =  1.0e-4;
+      opts.sigma    =  1.0e-4;
+      
+    case "scalarlocmin"
+      x = [0, 1, 2, 3, 4];
+      y = [-1, 1, 1e-2, 1, -1];
+      p = polyfit (x, y, 4);
+      dp = polyder (p);
+      jac = @(xx) polyval (dp, xx);
+      res = @(xx) polyval (p, xx);
+      x0 = 2.1;
+      bounds  = [0, 3];
+      opts.maxit    = 20;
+      opts.errtol   = 1e-12;
+      opts.maxdamp  = 20;
+      opts.lambda0  = .5;
+      opts.lambda0G = .8;
+      opts.gamma    =  1;
+      opts.etamax   = .8;
+      opts.eta0     = .8;
+      opts.alpha    =  2;
+      opts.t        =  1.0e-4;
+      opts.sigma    =  1.0e-4;
     otherwise
       error ("unknown problem name")
   endswitch
