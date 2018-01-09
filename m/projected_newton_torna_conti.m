@@ -67,14 +67,13 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
     if (in > 1)
       eta = gamma * (err(in) / err(in-1)) ^ alpha;
       eta = min (eta, etamax);
-      %% DISABLE "PRACTICAL SAFEGUARD"
-      %%maxeta = gamma * ee(in) ^ alpha;
-      %%if (maxeta > .1)
-      %%  eta = max (eta, maxeta);
-      %%endif
+      %DISABLE "PRACTICAL SAFEGUARD"
+      maxeta = gamma * ee(in) ^ alpha;
+      if (maxeta > .1)
+        eta = max (eta, maxeta);
+      endif
        
-      eta = eta_k_definitive(in);
-    
+      
     endif
 
     
