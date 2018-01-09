@@ -1,7 +1,5 @@
-%% è uguale al file projected_newton.m solo che qui ho usato il vettore eta_k_vere
-% calcolato da reverse_eng per le eta_k (nn sono riuscita a trovare delle gamma 
-% e alpha che, a tutte le iterazioni, diano le eta_k che servono a far quadrare i conti).
-% Ho anche imposto lambda = 0.8 ogni volta che 
+%% è uguale al file projected_newton.m solo che qui 
+% ho  imposto lambda = 0.8 ogni volta che 
 % si usa la direzione del gradiente. 
 
 function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
