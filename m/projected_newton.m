@@ -17,13 +17,14 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
   t        = opts.t;
   sigma    = opts.sigma;
 
-  resnew = F (x);
+  resnew     = F (x);
   normresnew = norm (resnew); 
-
-  eta      = eta0;
-  m        = 0;
-  lambda   = lambda0^m;
-  flag     = false;
+  err        = normresnew;
+  
+  ee=eta      = eta0;
+  mm=m        = 0;
+  ll=lambda   = lambda0^m;
+  ff=flag     = false;
 
 
   printf ("%10.10s | \t%10.10s | \t%10.10s | \t%s | \t%10.10s\n",
@@ -107,9 +108,9 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
             
     endif
 
-    plot (err)
+    semilogy (err)
     drawnow
-
+    
   endfor
 
   err = err(:);

@@ -181,8 +181,22 @@ for its = 2 : nt
       F = @(u) FF(u, mold, nold, inodes, dnodes,
                   stiffm, stiffn, mass,
                   pressure, G, dGdm, dGdn, dt);
+
+      opts.maxit    = 400;
+      opts.errtol   = 1e-12;
+      opts.erank    = 5;
+      opts.maxdamp  = 20;
+      opts.lambda0  = .5;
+      opts.lambda0G = .8;
+      opts.gamma    =  1;
+      opts.etamax   = .8;
+      opts.eta0     =  7.65518617913987e-01;
+      opts.alpha    =  2;
+      opts.t        =  1.0e-4;
+      opts.sigma    =  1.0e-4;
       
-      [u, err, mm, ee] = projected_newton (J, F, uguess, bounds);
+      u = projected_newton (J, F, uguess, bounds, opts);
+      %%ug = projected_extrapolated_gradient (J, F, uguess, bounds, opts);
       
       all_nzero = all (u >= 0);
       incr = norm ((uguess - u)./(u + 1), inf);

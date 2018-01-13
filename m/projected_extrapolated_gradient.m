@@ -14,9 +14,8 @@ function [x, err, ll] = projected_extrapolated_gradient (J, F, x0, bounds, opts)
   sigma    = opts.sigma;
 
   res     = F (x);
-  normres = norm (res); 
-
-  lambda   = 1;
+  err=normres = norm (res); 
+  ll=lambda   = 1;
 
   for in = 1 : maxit
     
@@ -27,7 +26,7 @@ function [x, err, ll] = projected_extrapolated_gradient (J, F, x0, bounds, opts)
     err(in) = normres; 
     ll(in)  = lambda;
 
-    plot (err)
+    semilogy (err)
     drawnow
     
     jac     = J (x);
