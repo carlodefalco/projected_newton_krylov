@@ -75,7 +75,7 @@ while ((err > tol) && (k++ < 25))
         FLAG = 0;
         mm(k) = m;
         m = mmax+1;
-
+        ll(end+1)=lambdap;
       else
         
         m = m+1;
@@ -89,10 +89,12 @@ while ((err > tol) && (k++ < 25))
     
   else
     d = -DTHETA (F(x), J(x));
-    lambdap = 0.8;  %qui non sono riuscita ad aggiungere il ciclo while con la 
+    m=1;
+    lambdap = lambda0g^m;  %qui non sono riuscita ad aggiungere il ciclo while con la 
                     %disuguaglianza (6) perchè, come si vede dai risultati stampati, 
                     % questa non è MAI verificata per lambdap=0.8.
     lambdac = 0.8;
+    ll(end+1)=lambdap;
     printf ("iterazione = %d\n", k)
 
     printf ("lhs della disuguaglianza (6) = %d\n",
