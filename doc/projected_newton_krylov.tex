@@ -1,5 +1,5 @@
 % SIAM Article Template
-\documentclass[review]{siamart1116}
+\documentclass[]{siamart1116}
 \usepackage{lipsum}
 \usepackage{amsfonts}
 \usepackage{graphicx}
@@ -7,6 +7,7 @@
 \usepackage{algorithmic}
 \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
 \numberwithin{theorem}{section}
+\numberwithin{equation}{section}
 
 % Declare title and authors, without \thanks
 \newcommand{\TheTitle}{Projected Quasi-Newton-Krylov for Reaction-Diffusion Equations} 
@@ -59,8 +60,9 @@
 %</award-group>
 %</funding-group>
 
-\begin{document}
 
+\begin{document}
+\tableofcontents
 \maketitle
 
 % REQUIRED
@@ -79,10 +81,617 @@
 \end{AMS}
 
 \section{Introduction}
+Let's consider this nonlinear problem 
+\begin{equation}
+\begin{cases}
+F(x) = 0\\x \in \Omega,
+\end{cases}
+\end{equation}
+where $\Omega$ is a convex constraint set of $\mathbb{R}^{n}$ and $F: \mathbb{R}^{n} \rightarrow \mathbb{R}^{n}$ is continuously differentiable on $\Omega$.\\
+Let's consider first only the expression $F(x) = 0$.\\
+Nonlinear equations cannot be solved analytically in general. In this case, therefore, the
+solutions of the equations must be approached using \textit{iterative methods}.
+The method that we are going to analyse is the Newton's method, which is a particular case of fixed point iteration method. \\
+In particular, the Newton sequence is
+\begin{equation}
+{x}_{n+1} = {x}_{n} - F'({x}_{n})^{-1} F({x}_{n}) 
+\label{Newton_it}
+\end{equation}
+where we start from a initial guess ${x}_{0}$. We can view \ref{Newton_it} as the two-term Taylor expansion in which we impose $F({x}_{n+1})=0$.\\
+We have the following theoretical result regarding the convergence.\\
+\textbf{Standard assumptions:} 
+\begin{itemize}
+	\item $F(x) = 0$ has a solution ${x}^{*}$;
+	\item $F'(x): \Omega \rightarrow \mathbb{R}^{n}$ is Lipschitz continuous;
+	\item $F'({x}^{*})$ is non singular.
+\end{itemize}
 
+\noindent \textbf{Convergence's definitions}: \textit{ Let $\alpha \in \mathbb{R}^{n}$ and ${x}_{k} \in \mathbb{R}^{n}$, $k = 0,1,2,...$ Then ${x}_{k}$ is said:}
+	
+	\begin{itemize}
+		\item \textit{ \textbf{q-linearly convergent} if there exists a constant $C \in (0,1)$ and an integer $m$ such that for all $k\geq m$ 
+		\begin{equation}
+		||{x}_{k+1}-\alpha|| \leq C||{x}_{k}-\alpha|| .
+		\end{equation}	}
+	    \item \textit{ \textbf{q-superlinearly convergent} if there exists a sequence ${{C}_{k}}$ convergent to 0 such that
+		\begin{equation}
+		||{x}_{k+1}-\alpha|| \leq C_k||{x}_{k}-\alpha|| .
+		\end{equation}}
+	
+	\item \textit{ \textbf{convergent sequence of q-order p} $(p > 1)$ if there exists a
+		constant $C$ and an integer $m > 0$ such that for all $k \geq m$
+		\begin{equation}
+		||{x}_{k+1}-\alpha|| \leq C{||{x}_{k}-\alpha||}^{p} .
+		\end{equation}}
+\end{itemize}
+
+
+\noindent \textbf{Convergence theorem}: \textit{ Let the standard assumptions hold. Then there is $\delta$ such that if ${x}_{0} \in \mathit{B(\delta)}$  the Newton interation \ref{Newton_it} converges q-quadratically to ${x}^{*}$.\\}\\
+So we conclude that the Newton's method has local convergence, because the initial iterate needs to be "sufficiently near" to the solution, and also quadratical, that is $||{e}_{n+1}|| \leq K {||{e}_{n}||}^{2}$, for n sufficiently large ,with $K > 0$ and $||{e}_{n+1}|| = ||{x}_{n+1} - x_{ex}||$. \\
+
+In general, we don't have the analytical solution $x_{ex}$, so we have to find another estimation of the error that can be used as an \textit{arrest criterion} of the iterate method.
+For example in literature there is the \textit{relative nonlinear residual} $||F(x)||/||F({x}_{0})||$, that is a good indicator of the size of the error, but only when $F'({x}^{*})$ is well conditioned. Indeed we have:
+
+\noindent \textbf{Lemma 1}: \textit{ Let the standard assumptions hold and $\delta > 0$ be small enough. Then for all $x \in \mathit{B(\delta)}$}
+\begin{equation}
+\frac{||e||}{4 ||{e}_{0}|| \mathit{k}(F'({x}^{*}))} \leq \frac{||F(x)||}{||F({x}_{0})|} \leq \frac{4 \mathit{k}(F'({x}^{*}))||e||}{||{e}_{0}||}
+\end{equation}
+\textit{where $\mathit{k}(F'({x}^{*})) =||F'({x}^{*})||$ $ ||{F'({x}^{*})}^{-1}|| $ is the condition number of $F'({x}^{*})$ relative to the norm $||\cdot||$.}
+
+\noindent Another way to decide whether to terminate is to look at the Newton \textit{step}
+\begin{equation}
+{s}_{n+1} ={x}_{n+1} - {x}_{n}= -{F'({x}_{n})}^{-1}F({x}_{n}),
+\end{equation}
+and terminate the iteration when $||{s}_{n+1}||$ is sufficiently small. This criterion is based on a theorem which implies that 
+\begin{equation}
+||{e}_{n+1}|| = ||{s}_{n+1}|| + \mathcal{O}({||{e}_{n+1}||}^{2}).
+\end{equation}
+Hence, near the solution $s$ and $e$ are essentially the same size.\\ 
+
+Sometimes it is too expensive from a computational point of view to compute $F'(x)$ at each step and sometimes, actually, there is no need to be so precise because, for example, we are too far from the solution. And also we would like to have a global convergence, instead just of a local one. There are many techniques that are done for these requirements, and in the next session we illustrate some of them.
 \section{Review of Variants of the Newton Method}
+The following subsection will be about the approximations for ${F'}^{-1}$, but first of all we want to give a theoretical result about inaccuracy. Suppose that $F + \epsilon$ and $F' + \Delta$ are used instead of $F$ and $F'$ in the iteration, then we have the following result.
+\begin{theorem}
+	\label{accuracy}
+	Let the standard assumptions hold. Then there are $K>0$, $\delta>0$ and $\delta_1>0$ such that if $x_{n} \in \mathit{B}(\delta)$ and $||\Delta(x_{n}) ||<\delta_1$ then 
+ \begin{equation}
+ x_{n+1}=x_{n} - (F'(x_n)+\Delta(x_n))^{-1}(F(x_n)+\epsilon(x_n))
+ \end{equation}
+	is defined (i.e.,$F'(x_n)+\Delta(x_n)$ is nonsingular) and satisfies 
+\begin{equation}
+||{e}_{n+1}|| =K(||{e}_{n}||^2 + ||\Delta(x_n)|||e_n ||+||\epsilon(x_n) || ).
+\end{equation}
+	
+\end{theorem} 
+As we can observe, it can happen that the convergence is not quadratical anymore. 
+\subsection{Quasi-Newton method} 
+Under this name we have all the Newton methods that don't calculate the real value of ${F'(x)}^{-1}$, but use approximations. The price for such an approximation is that the nonlinear iteration converges more slowly; i.e., more nonlinear iterations are needed to solve the problem. However, the overall cost of the solve is usually less, because the computation of the Newton step is less expensive.
+Therefore, we are obligated to use a quasi-Newton method when is unavailable to have the exact expression of ${F'(x)}^{-1}$ or is too expensive to compute at every iteration. \\
+Let's illustrate same of this methods. \\
+
+\subsubsection{Chord method or modified Newton method} In this case the Newton iteration is given by
+\begin{equation}
+{x}_{n+1} = {x}_{n} - F'({x}_{0})^{-1} F({x}_{n}) 
+\end{equation}
+Let's suppose again that the standard assumptions hold. Assuming that the initial iteration is near enough to ${x}^{*}$, the convergence of the chord iteration is q-linear. Indeed, this comes from theorem \ref{accuracy}, noticing that $\epsilon(x_n) = 0$ and $||\Delta(x_n)|| = \mathcal{O}(||e_0||)$.\\
+ In general, we can also update $F'(x)^{-1}$ after $m$ iterations and not use $F'({x}_{0})^{-1}$ always.\\
+Another way to implement chord-type methods is 
+\begin{equation}
+{x}_{n+1} = {x}_{n} - {A}^{-1} F({x}_{n}), 
+\end{equation}
+where $A \approx F'({x}^{*})$. Also in this case, if we have a good guess ${x}_{0}$ and $A$ is a good approximation of $ F'({x}^{*})$, then we have a \textit{q-linear} convergence. \\
+
+\subsubsection{Shamanskii method} It consists in a alternation of a Newton step with a sequence of chord steps and leads to a class of \textit{high-order methods}, that is, methods that converge q-superlinearly with q-order larger that 2. \\
+We can describe the transition from ${x}_{n}$ to ${x}_{n+1}$ by
+\begin{gather}
+{y}_{1} = {x}_{n} -{F'({x}_{n})}^{-1}F({x}_{n}),\\
+{y}_{j+1} = {y}_{j} -{F'({x}_{n})}^{-1}F({y}_{j}) \; \; \; \; \; for\; 1\leq j \leq m-1, \\
+{x}_{n+1} = {y}_{m}
+\end{gather}
+
+Note that $m=1$ is Newton's method and $m=\infty$ is the simplest chord method.
+\begin{theorem}
+	Let the standard assumptions hold and let $m \geq 1$ be given. Then there are $K_{S}>0$ and $\delta>0$ such that if $x_{0} \in \mathit{B(\delta)}$, the Shamankii iterates converge q-superlinearly to $x^{*}$ with q-order $m+1$ and 
+	\begin{equation}
+	||e_{n+1} ||\leq K_{S} ||e_{n} ||^{m+1}.
+	\end{equation}
+\end{theorem}
+The advantage of the Shamanskii method over Newton's method is that hight q-order can be optained with far fewer Jacobian evaluations or factorizations.\\
+
+\subsubsection{Difference approximations of the Jacobian matrix}. Another possibility consists of replacing $F'(x_{k})$ with an approximation through \textit{n}-dimensional
+differences of the form
+\begin{equation}
+(F'^{k}_{h})_{j} = \frac{F(x_{k} + h^{k}_{j} e_{j}) - F(x_{k})}{h_{j}^{k}},\;\;  \forall k \geq 0,
+\end{equation}
+	
+where $e_j$ is the j-th vector of the canonical basis of $\mathbb{R}^n$ and $h_j^k>0$ are
+increments to be suitably chosen at each step $k$ of the iteration.\\
+ \textit{Convergence's result}. Under the standards assumptions, a initial guess "sufficiently near" to the solution and bounded $ h^{k}_{j}$ for $j=1,...,n$, then the sequence 
+ \begin{equation}
+   x_{k+1}=x_k -[F'^{k}_{h}]^{-1} F(x_k)
+   \label{iter_conv_result}
+ \end{equation}
+ converges \textit{linearly} to $x^*$. Moreover, if there exists a
+ positive constant $C$ such that $\max_{j}|h^{k}_{j}| \leq C ||x_k - x^*||$	or, equivalently,
+ there exists a positive constant $c$ such that $\max_{j}|h^{k}_{j}| \leq c ||F(x_k)||$, then
+ the sequence \ref{iter_conv_result}, is convergent \textit{quadratically}. But we should pay attention also not to choose $h_j^k$ too small in order to avoid big errors of truncation. 
+ \\
+ 
+\subsubsection{Secant method}This case is done for single equations $f'(x) = 0$ and the derivative is approximated using a finite difference with the most recent two iterations. 
+\begin{equation}
+{x}_{n+1} = {x}_{n} -\frac{({x}_{n}-{x}_{n-1}) f({x}_{n})}{f({x}_{n})-f({x}_{n-1})} 
+\label{it_secant_method}
+\end{equation} 
+For the computation of ${x}_{1}$, one option is to set ${x}_{-1} = 0.99{x}_{0}$. If the standard assumptions hold, theorem \ref{accuracy}, with $\epsilon = 0$ and $||\Delta(x_n)||=\mathcal{O}(||e_{n-1}||)$, implies that the iteration converges\textit{ q-superlinearly}.\\
+ 
+\subsubsection{Broyden's method}This is a version of secant method for higher dimensions than 1.\\
+In a multidimentional case the equation \ref{it_secant_method} has no sense, because we can't divide by a vector, so we ask that ${B}_{n}$ , the current approximation od $F'(x)$, satisfies the secant equations 
+\begin{equation}
+{B}_{n}({x}_{n} - {x}_{n-1}) = F({x}_{n}) - F({x}_{n-1}).  
+\end{equation} 
+A wide variety of methods, that satisfy the secant equations, have been designed to preserve such properties of the Jacobian as the sparsity patter or symmetry. In the case of Broyden's method, we have
+\begin{equation}
+{x}_{n+1} = {x}_{n} - {\lambda}_{n}{B}_{n}^{-1}F({x}_{n}).  
+\end{equation} 
+where ${\lambda}_{n}$ is the step length for Broyden direction
+\begin{equation}
+{d}_{n} = -{B}_{n}^{-1}F({x}_{n})  
+\end{equation} 
+After the computation of ${x}_{n+1}$, ${B}_{n}$ is updated 
+\begin{equation}
+{B}_{n+1} = {B}_{n} + \frac{(y - {B}_{n}){s}^{T}}{{s}^{T}s}  
+\end{equation} 
+with $y = F({x}_{n+1}) - F({x}_{n})$ and $ s = {x}_{n+1}-{x}_{n} = {\lambda}_{n}{d}_{n} $.\\
+Broyden's method does not guarantee that the approximate Newton direction will be a descent direction for $||F||$  (the same can happen also with the secant method).
+Under hypothesis of standard assumptions and both ${x}_{0}$ and ${B}_{0}$ sufficiently near to the solution, the convergence theory for Broyden's method is \textit{q-superlinear}, so it is only local and, therefore, less satisfactory than that for the Newton and Newton-Krylov methods. Moreover the line search cannot be proved to compensate for poor initial iterate, because it can work for sure only with a good approximation of $F'({x}_{n})$.
+\\
+
+\subsection{Inexact Newton Method} Rather than approximate the Jacobian, one could instead solve the equation for the Newton step approximately. An inexact Newton method uses as a Newton step a vector $s$ that satisfies the inexact Newton condition
+\begin{equation}
+||F'(x_n)s+F(x_n)|| \leq \eta ||F(x_n)||.
+\label{inexact_newton}
+\end{equation}
+The parameter $\eta$ is called \textbf{forcing term}. Away from the solution $x^*$, $F$ and its local linear model may disagree considerably at a step that closely approximates the Newton step. So choosing $\eta$ too small may lead to \textit{oversolving} the Newton equation. Therefore far from the solution, a less accurate approximation of the Newton step may be both cheaper and more effective. So, the idea is to choose a forcing term that becomes smaller when the iteration are closer to the solution. And what about the convergence?
+\begin{theorem} \label{convergenza_IN}
+	Let the standard assumptions hold. Then there are $\delta$ and $\bar{\eta}$ such that, if $x_0 \in \mathit{B}(\delta)$, ${\eta_n}\subset [0,\bar{\eta}]$, then the inexact Newton iteration
+	\begin{equation}
+	x_{n+1} = x_n + s_n
+	\end{equation}
+	where
+   \begin{equation}
+   ||F'(x_n)s_n+F(x_n)|| \leq \eta_n ||F(x_n)||,
+   \end{equation}
+	converges q-linearly to $x^*$. Moreover, 
+	\begin{itemize}
+		\item if $\eta_n \rightarrow 0$, the convergence is q-superlinear, and 
+		\item if $\eta_n \leq K_{\eta} ||F(x_n) ||^p$ for some $K_{\eta}>0$, the convergence is q-superlinear with q-order $1+p$.
+	\end{itemize}
+	
+\end{theorem}
+In literature we can find the following choices of $\eta$. \\
+\noindent \textbf{Choice 1.} Given $\eta_0 \in [0,1)$, choose
+\begin{equation}
+\eta_k=\frac{||F(x_k) - F(x_{k-1}) - F'(x_{k-1})s_{k-1} ||}{||F(x_{k-1})||},\;\;\;\;\; k=1,2,3...
+\label{Choice1.1}
+\end{equation}
+or
+\begin{equation}
+\eta_k=\frac{| ||F(x_k)|| - ||F(x_{k-1}) + F'(x_{k-1})s_{k-1} ||}{||F(x_{k-1})|| |},\;\;\;\;\; k=1,2,3...
+\label{Choice1.2}
+\end{equation}
+
+ Note that $\eta_k$ given by \ref{Choice1.1} and \ref{Choice1.2} directly reflects the agreement between $F$ and its local linear model at the previous step. The choice \ref{Choice1.2} may be more convenient to evaluate that \ref{Choice1.1} in some circumstances. Since it is at least as small as \ref{Choice1.1}, local convergence will be at least as fast as with \ref{Choice1.1}.\\
+ One possible way to obtain faster local convergence, while retaining the potential advantages of \ref{Choice1.1} and \ref{Choice1.2}, is to raise those expression to powers greater than one. 
+\noindent \textbf{Choice 2.} Given $\gamma \in [0,1]$, $\alpha \in (1,2]$, and $\eta_0 \in [0,1)$, choose
+\begin{equation}
+\eta_k=\gamma (\frac{||F(x_k)||}{||F(x_{k-1})||})^{\alpha},\;\;\;\; k=1,2,3...
+\label{Choice2}
+\end{equation}
+This choice does not directly reflect the agreement between $F$ and his local linear model. However, it can produce a little oversolving in practice.\\ 
+
+In experiments it was observed that the forcing term choices occasionally become too small far away from a solution. There is a particular danger of the Choice 1 forcing terms becoming too small; indeed, an $\eta_k$ given by \ref{Choice1.1} or \ref{Choice1.2} can be undesirably small because of their very small step or coincidental very good agreement between F and its local linear model. For this reason there are \textbf{safegurads} that are intended to prevent the forcing term to become too small too quickly.\\
+\textit{Choice 1 safeguard}: Modify $\eta_k$ by $\eta_k = max  \{\eta_k, \eta_{k-1}^{\frac{(1+\sqrt{5})}{2}}\}$ whenever $\eta_{k-1}^\frac{(1+\sqrt{5})}{2} > 0.1$.\\
+\textit{Choice 2 safeguard}: Modify $\eta_k$ by $\eta_k = max  \{\eta_k,\gamma  \eta_{k-1}^\alpha\}$ 
+whenever $\gamma  \eta_{k-1}^\alpha > 0.1$.\\
+There is also another version of safeguard for the choice 2, and this is 
+\begin{equation}
+\eta_k = min (\eta_{max}, max (\eta_k^C, 0.5 \tau_t/||F(x_k)||)),
+\end{equation}
+with $\tau_t =  \tau_a + \tau_r||F(x_0)||$ and 
+\begin{equation}
+\eta_k^C={
+\begin{cases}
+\eta_{max},\;\; n=0 \\
+min(\eta_{max}, \eta_k),\;\; n>0,\;\; \gamma \eta_{k-1}^2\leq 0.1\\
+min(\eta_{max}, max(\eta_k, \gamma \eta_{k-1}^2)),\;\; n>0,\;\; \gamma \eta_{k-1}^2> 0.1
+
+\end{cases}}
+\end{equation}
+
+Iterative methods for solving the equation for the Newton step would typically use \ref{inexact_newton} as a termination criterion. In this case, the overall nonlinear solver is called a \textbf{Newton iterative method}, and they are named by the particular iterative method used for the linear equation. For example, there are Newton-Jacobi, Newton-SOR or Newton-Krylov.\\
+
+\subsection{Newton-Krylov Methods} 
+As we said before, for each iteration of the inexact Newton method, we have to solve a linear equation with an iterative method. Sometimes we refer to this linear iteration as an \textit{inner iteration}. Similarly, the nonlinear iteration is ofen called the \textit{outer iteration}.\\
+The Newton-Krylov methods, as the name suggests, use Krylov subspace-based linear solver. It approximates the solution of a linear system $Ad=b$ with a sum of the form 
+\begin{equation}
+d_k=d_0+\sum_{j=0}^{k-1}\gamma_j A^jr_0,
+\end{equation}
+where $r_0=b-Ad_0$ and $d_0$ is the initial iterate. Since the goal is to approximate a Newton step, the most sensible initial iterate is $d_0=0$, because we have no priory knowledge of the direction, but, at least in the local phase of the iteration, expect it ot be small.\\
+ We express this in compact form as $ d_k \in \mathcal{K}_k$, where the $k$th \textbf{Krylov subspace} is $\mathcal{K}_k = span  (r_0, Ar_0, ...,A^{k-1}r_0)$.\\
+ There are many Newton-Krylov methods and they differ in storage requirements, cost in evaluations of $F$ and robustness. If $A$ is symmetric and positive definite, the conjugate gradient (CG) method has better storage and convergence properties than others Newton-Krylov methods. If the matrix $A$ does not have this properties, then we can use two low-storage solvers, BiCGSTAB and TFQMR, but we have to be aware that this solvers can break down, because a division by zero can occur. An other option is GMRES, that is not low-storage solver (but it can become as we will see in the next section), and, when there is no convergence, instead of breaking down, there is just a stagnation in the iterations.
+ \subsubsection{GMRES} 
+ The $k$th Generalized Minimal Residual (GMRES) iterate is the solution of the linear least squares problem of minimizing 
+ \begin{equation}
+ ||b-Ad_k ||^2
+ \end{equation}
+ over $\mathcal{K}_k$.\\
+ An important property of the method, it that GMRES must accumulate the history of the linear iteration as an orthonormal basis for the Krylov subspaces. Therefore, for large problems, it can exhaust the available fast memory. For these cases, there is GMRES($m$), which restarts the iteration when the size of Krylov space exceeds $m$ vectors. \\
+ Sometimes GMRES method, like other Krylov methods, is implemented as a \textit{matrix-free} method. The reason is that only matrix-vector products, rather than details of the matrix, are needed to implement a Krylov method.\\
+\noindent \textbf{Algorithm.} We want to solve the linear system 
+\begin{equation}
+A d = b,
+\end{equation}
+using the $l_2$-orthogonal basis $V_k = \{v_1, ...,v_k \}$ of the space $\mathcal{K}_k$; in fact, we look for a solution of the type $d_k = x_0 + z_k$, where $d_0$ is an initial guess and $z_k \in \mathcal{K}_k$. Let's define the residual $r_k = b-Ad_k$ and choose $v_1 = \frac{r_0}{||r_0||}$. Then we can write $z_k$ as a linear combination of $\{v_1, ...,v_k \}$, that is 
+\begin{equation}
+z_k = V_k y_k .
+\end{equation}
+We introduce $H$, the upper $k \times k$ Hessenberg matrix, that is $H \equiv V_k^T A V_k$, so it is the matrix representation of $A_k$ in the basis $\{v_1, ...,v_k \}$. \\
+Since we have $(b - A(d_k)) \perp \mathcal{K}_k$, that is $(b - A(d_0 + z_k)) \perp \mathcal{K}_k$ , then we know that $(w,r_0 - A r_k) = 0 \; \; \forall w \in \mathcal{K}_k$. We can deduce that $V_k^T A z_k = V_k^T r_0$, and so $A z_k = r_0$. It is known that $r_0 =V_k e_1 ||r_0||$, with $e_1$ the unit vector $e_1 = (1, 0, ..., 0)^T$, then we deduce that $y_k = H_k^{-1} ||r_0||e_1$. 
+\\
+
+ALGORITHM 1 (\textit{Arnoldi's method}): Full orthogonalization method.\\
+1. \textit{Start:} Choose $d_0$ and compute $r_0 = b- A d_0$ and $v_1 = \frac{r_0}{||r_0||}$. \\
+2. \textit{Iterate:} For $j=1,2,...,k$ do:\\
+\hspace*{1cm} $h_{i,j} = (Av_j,v_i),\;\; i = 1,2,...j,$\\ 
+\hspace*{1cm} $\hat{v}_{j+1} = Av_j - \sum_{i=1}^{j}h_{i,j}v_i,$ \\
+\hspace*{1cm} $ h_{j+1,j} = ||\hat{v}_{j+1}||,$\\
+\hspace*{1cm} $v_{j+1} = \hat{v}_{j+1}/h_{j+1,j}$.\\
+3. \textit{Form the solution:} \\
+\hspace*{1cm} $d_k = d_0 + V_k y_k$  where  $y_k = H^{-1}_k ||r_0||e_1$ \\
+The step 2 of the ALGORITHM 1 just uses the Gram-Schmidt method for computing an $l_2$-orthonormal basis $\{v_1, ..., v_k \}$. \\
+
+Let's see now the GMRES algorithm that comes from the Arnoldi's one. After $k$ steps of Arnoldi's method, we have an $l_2$-orthonormal system $V_{k+1}$ and a $(k+1) \times k$ matrix $\bar{H}_k$, whose only non zero entries are the element $h_{ij}$ generated by the method. Thus the $\bar{H}_k$ is the same as $H_k$ except for an additional row, whose only nonzero element is $h_{k+1,k}$. We have this important relation:
+\begin{equation}
+\label{GMRES1}
+AV_k=V_{k+1}\bar{H}_k.
+\end{equation}
+We would like to solve the least squares problem: 
+\begin{equation}
+\label{jmin}
+\min_{z \in \mathcal{K}_k} ||f-A[d_0+z]|| = \min_{z \in \mathcal{K}_k}||r_0-Az||.
+\end{equation}
+We remember that $z=V_ky$, so we can see \ref{jmin} as a function of $y$ to be minimized:
+\begin{equation}
+J(y)=||\beta v_1 -A V_k y||,
+\end{equation}
+where we have $\beta = ||r_0||$. Using \ref{GMRES1} we obtain 
+\begin{equation}
+J(y)=||V_{k+1} ( \beta v_1 -\bar{H}_k V_k y ) ||.
+\end{equation}
+Recalling the fact that $V_{k+1}$ is $l_2$-orthonormal and so that it preserve the norm, we see that 
+\begin{equation}
+\label{gmres2}
+J(y)=|| \beta v_1 -\bar{H}_k V_k y ||.
+\end{equation}
+In conclusion, the solution of the least squares problem \ref{GMRES1} is given by 
+\begin{equation}
+d_k = d_0 + V_k y_k,
+\end{equation}
+where $y_k$ minimizes the function $J(y)$, defined by \ref{gmres2}, over $y \in \mathbb{R}^k$. \\
+
+ALGORITHM 2 (\textit{GMRES}): Full orthogonalization method.\\
+1. \textit{Start:} Choose $d_0$ and compute $r_0 = b- A d_0$ and $v_1 = \frac{r_0}{||r_0||}$. \\
+2. \textit{Iterate:} For $j=1,2,...,k$ do:\\
+\hspace*{1cm} $h_{i,j} = (Av_j,v_i),\;\; i = 1,2,...j,$\\ 
+\hspace*{1cm} $\hat{v}_{j+1} = Av_j - \sum_{i=1}^{j}h_{i,j}v_i,$ \\
+\hspace*{1cm} $ h_{j+1,j} = ||\hat{v}_{j+1}||,$\\
+\hspace*{1cm} $v_{j+1} = \hat{v}_{j+1}/h_{j+1,j}$.\\
+3. \textit{Form the approximate solution:} \\
+\hspace*{1cm} $d_k = d_0 + V_k y_k$  where  $y_k$ minimizes \ref{gmres2} \\
+How to compute the step 3 of ALGORITHM 2 practically ? \\
+We consider the $QR$-factorization of $\bar{H}_k$, so $Q_k \bar{H}_k = R_k$, with $Q_k$ a $(k+1) \times (k+1)$ rotation matrix and $R_k$ a $(k+1) \times k$ upper triangular matrix whose last row is zero. Since $Q_k$ is unitary, we have:
+\begin{equation}
+\label{gmres3}
+J(y) = ||\beta e_1 - \bar{H}_k y|| = ||Q_k (\beta e_1 - \bar{H}_k y)|| = ||g_k - R_k y||,
+\end{equation}
+where $g_k= Q_k \beta e_1$ . Since the last row of $R_k$ is zero, the minimization of \ref{gmres3} is achieved by solving the upper triangular linear system which we have if we remuve the last row of $R_k$ and the last component of $g_k$. We also notice that the residual norm of the solution $d_k$ is equal to the $(k+1)$st component of $g_k$.\\
+ For more details see \cite{GMRES}.\\
+ 
+\noindent \textbf{Convergence.} As a general rule, GMRES, like others Krylov methods, performs best if the eigenvalues of $A$ are in a few tight clusters. One way to see this, keeping in mind $d_0=0$, is to observe the $k$th GMRES residual can be written as a polynomial in $A$ applied to the residual
+\begin{equation}
+r_k=b-Ad_k=p(A)r_0=p(A)b.
+\end{equation}
+  Here $p\in \mathcal{P}_k$, this is the set of polynomial of degree $k$ with $p(0)=1$. Since the $k$th GMRES iteration satisfies 
+  \begin{equation}
+  ||Ad_k-b ||\leq ||Az-b||
+  \end{equation}
+  for all $z\in\mathit{K_k}$, we must have 
+  \begin{equation}
+  ||r_k||=\min_{p\in \mathcal{P}_k}||p(A)r_0 ||.
+  \end{equation}
+  This simple fact can lead to very useful error estimates.
+  Suppose $A$ is diagonalizable, in other words there is a nonsingular matrix $V$ such that 
+   \begin{equation}
+   A=V\Lambda V^{-1}.
+   \end{equation}
+   Here $\Lambda$ ia a diagonal matrix with the eigenvalues of $A$ on the diagonal. If $A$ ia a diagonalizable matrix and $p$ is a polynomial, then 
+   \begin{equation}
+   p(A)=Vp(\Lambda) V^{-1}.
+   \end{equation}
+   \begin{theorem}
+   	Let $A=V\Lambda V^{-1}$ be a nonsingular diagonalizable matrix. Let $d_k$ be the $k$th GMRES iterate. Then, for all $\bar{p_k}\in \mathcal{P}_k$,
+   	\begin{equation}
+   	\frac{||r_k||}{||r_0||}\leq \mathit{k}(V) \max_{z\in \sigma(A)}|\bar{p_k}(z)|.
+   	\end{equation}
+   \end{theorem}
+   
+   Suppose, for example, that $A$ is diagonalizable, $\mathit{k}(V) = 100$, and all the eigenvalues of $A$ lies in a disk of radius 0.1 centered about 1 in the complex plane. Theorem 2.4 implies (using $\bar{p_k}(z)=(1-z)^k$) that
+   \begin{equation}
+   ||r_k||\leq 100(0.1)^k =0.1^{k-2}
+   \end{equation}
+   Hence, GMRES will reduce the residual by a factor of, say, $10^5$ after seven iterations. And now we can see also that having clusters that are not so spread, is better. One objective of preconditioning is to change $A$ to obtain an advantageous distribution of eigenvalues.\\
+   
+   \subsection{Equivalences between Inexact and Quasi-Newton method} Let's consider the quasi-Newton iterate: 
+   \begin{equation}
+   (F'(x_n) + \Delta_n) s_n = -F(x_n),
+   \end{equation}
+     with $\Delta_n = B_n - F'(x_n)$ and $B_n$ a sequence of invertible matrices. From the theorem 1 in \cite{Emil}, we know that, if QN iterates converge to $x^{*}$, then they converge \textit{superlinearly} if and only if 
+     \begin{equation}
+     \label{QNcond}
+     \frac{||(B_n-F'(x^*))(x_{n+1}-x_{n})||}{||x_{n+1}-x_{n}||} \rightarrow 0 \; \; as\; n\rightarrow \infty
+     \end{equation} 
+   The last one can be written also like this: 
+      \begin{equation}
+      \label{suplin QN}
+      ||(F'(x_n)+\Delta_n -F'(x^*))s_n|| = o(||s_n||) \; \; as \; n \rightarrow \infty
+      \end{equation}
+
+   Now, let's consider the inexact Newton iterate: 
+   \begin{equation}
+   F(x_n)s_n = -F(x_n)+r_n
+   \end{equation}
+    The theorem 2 in \cite{Emil} asserts that if the IN iterates converge to $x^*$, then this convergence is \textit{superlinear} if and only if 
+    \begin{equation}
+    \label{INcond}
+    ||r_n||=o(||F(x_n)||) \; \; as \; n \rightarrow \infty
+    \end{equation}
+       We will call \ref{QNcond} and \ref{INcond} conditions that characterize the superlinear convergence.
+   Let's write the QN iterates as IN iterates is this way
+      \begin{equation}
+      F'(x_n)s_n = -F(x_n)-\Delta_n s_n,
+      \end{equation}
+   and in this case \ref{INcond} becomes 
+       \begin{equation}
+       \label{suplin_IN}
+       ||\Delta_ns_n||= o (||F(x_n)||) \; \; as \: n \rightarrow \infty.
+       \end{equation}
+      In \cite{Emil} it is proved that \ref{suplin_IN} and \ref{suplin QN} are equivalent. \\
+      
+      Moreover, also the IN iterates can be written as QN iterates 
+      \begin{equation}
+     (F'(x_n)- \frac{1}{||s_n||^2_2} r_n s^t_n) s_n= -F(x_n)
+      \end{equation}
+       and \ref{suplin QN} becomes 
+      \begin{equation}
+      \label{daINaQN}
+      ||(F'(x_n)- \frac{1}{||s_n||^2_2} r_n s^t_n - F'(x^*))s_k|| = o(||s_k||) \; \; as \; n\rightarrow \infty
+      \end{equation}
+    Also in this case, in \cite{Emil} is proven that \ref{daINaQN} and \ref{INcond} are equivalent.
+    
+   The conclusion is that quasi-Newton methods and the inexact Newton methods are equivalent, in the sense that each may be used to characterize the high convergence order of the other. For example, one can use Theorem \ref{convergenza_IN} to analyze the chord method or the secant method. In the case of the chord method, the steps satisfy \ref{inexact_newton} with $\eta_n=\mathcal{O}(||e_0||)$, which implies q-linear convergence if $||e_0||$ is sufficiently small. For the secant method, $\eta_n = \mathcal{O}(||e_{n-1}||)$, implying q-superlinear convergence.
+       
+   \subsection{Global convergence} 
+   The convergence of Newton and inexact Newton methods is local; i.e., convergence
+   is guaranteed if the initial iterate $x_0$ is sufficiently near a solution. Globalization techniques improve the likelihood of convergence from arbitrary starting points and most of them fall into two classes: \textbf{line search} methods and \textbf{trust-region} methods.\\
+   \subsubsection{Line search.} Many times, when we are far from the solution, we don't manage to arrive to convergence, because the steps become too large or too small. In this case, with an extra condition, we decide how large to be the step in the \textbf{search direction} $d_k$ calculate in that iteration. So we don't update $x_{k+1}$ anymore like $x_{k+1} = x_{k} + d_k$, but we do it in this way: $x_{k+1} = x_{k} + \lambda d_k$. Line search with Newton’s method is called also \textbf{damped Newton method}. \\
+   One of the simplest condition is the one that impose the new $x_{k+1}$ to make \textit{decrease} $||F||$, therefore:
+   \begin{gather*}
+   	\lambda = 1\\
+   while \;\;\;\; ||F( x_{k} + \lambda d_k)|| \geq ||F(x)||\\
+   \lambda = \lambda /2 \\
+   endwhile\\
+   x_{k+1}=x_k + \lambda d_k
+   \end{gather*}
+     We call this method \textit{line search} because we search along the line segment
+     \begin{equation}
+     (x_k, x_k - d_k)
+     \end{equation}
+     to find a decrease of $||F||$. As we move from the right endpoint to the left, usually this procedure is called \textit{backtracking}.\\
+    There is also another condition, that impose the new $x_{k+1}$ to make \textit{sufficiently decrease} $||F||$,
+    \begin{gather*}
+    	\lambda = 1 \; \; and \; \; \alpha \in (0,1)\\
+    	while \; \;\;\;||F( x_{k} + \lambda d_k)|| \geq (1-\alpha\lambda)||F(x)||\\
+    	\lambda = \lambda /2 \\
+    	endwhile\\
+    	x_{k+1}=x_k + \lambda d_k
+    \end{gather*}
+   This approach is called \textbf{Armijo rule}. \\
+  In these cases the factor of reduction is $\frac{1}{2}$, but sometimes a factor of 10 could be better if small values of $\lambda$ are needed for several consecutive steps. On the other hand, reducing $\lambda$ by too much can be costly as well. Taking full Newton steps ensures fast local convergence. Taking \textit{as large} a fraction \textit{as
+  possible} helps move the iteration into the terminal phase in which full steps
+  may be taken and fast convergence expected.\\
+  Let's see different ways to choose $\lambda$.\\
+  \noindent\textbf{Constant reduction.} One possibility is to halve $\lambda$ at each try, but we can also choose other ways, like, for example, choosing a starting $\lambda_0 \in (0,1)$ and then use for each try $m$ , $\lambda = \lambda_0^m$ .\\
+  \noindent\textbf{Polynomial line searches.} Choosing a reduction factor of the steplegngth that is the best for the specific step is better than constant reduction factors. If one can model the decrease
+  in $||F||$ as the steplength is reduced, one might expect to be able to better
+  estimate the appropriate reduction factor.
+  In practice such methods usually
+  perform better than constant reduction factors.\\
+  If we have rejected $k$ steps, we have in hand the values
+  \begin{equation*}
+  ||F(x_n)||,||F(x_n+\lambda_1d_n)||,...,||F(x_n+\lambda_{k-1}d_n)||.
+  \end{equation*}
+  We can use this iteration history to model the scalar function
+	  \begin{equation*}
+	  f(\lambda)=||F(x_n + \lambda d_n)||^2
+	  \end{equation*}
+	  with a polynomial and use the minimum of that polynomial as the next steplength.
+  We consider two ways of doing this that use second degree polynomials which we compute using previously computed information. After $\lambda_c$  has been rejected and a model polynomial computed, we compute the minimum $\lambda_t$ of that polynomial analytically and set
+  \begin{equation}
+  \lambda_+={
+  	\begin{cases}
+  	\label{lambda+}
+  	\sigma_0\lambda_c \; \; if \; \; \lambda_t<\sigma_0\lambda_c, \\
+  	\sigma_1\lambda_c \; \; if \; \; \lambda_t>\sigma_1\lambda_c,\\
+  	\lambda_t \; \; \; \; otherwise
+  	
+  	\end{cases}}
+  \end{equation}
+  with $\sigma_0$ and $\sigma_1$ being safeguards avoiding to have $\lambda$ too small or large. In general, these safeguards are set to $0.1$ and $0.5$.\\
+  Let's see how to calculate $\lambda_t$.\\
+\noindent\textbf{Two-point parabolic model.} Here we use values of $f(0)$ and $f'(0)$ and the value of $f$ at the current $\lambda$ to construct a 2nd degree interpolating polynomial for $f$. \\
+We have $f(0)= ||F(x_n)||^2$ and $f'(0)= 2 F(x_n)^T (F'(x_n)d_n)$. $(F'(x_n)d_n)$ can be obtained by examination of the final residual of GMRES and, moreover, $f'(0)$ needs to be negative, if it doesn't happen, then we may need a new search direction. \\
+Therefore the polynomial is:
+\begin{equation}
+p(\lambda) = f(0) + f'(0)\lambda + c \lambda^2
+\end{equation}
+with 
+\begin{equation}
+c= \frac{f(\lambda_c)-f(0)-f'(0)\lambda_c}{\lambda_c^2}
+\end{equation}
+Having $f'(0)<0$, so if $f(\lambda_c)>f(0)$, then $c>0$ and $p(\lambda)$ has a minimum at 
+\begin{equation}
+\lambda_t = -f'(0)/(2c) > 0
+\end{equation}
+We then compute $\lambda_+$ with \ref{lambda+}. \\
+\noindent\textbf{Three-point parabolic model.}
+An alternative to the two-point model, that avoids the need to approximate $f'(0)$, is a three-point model, which uses $f(0)$ and the two most recently rejected steps to create the parabola.\\
+In this case we evaluates $f(0)$ and $f(1)$ and, if the full step is rejected, we set $\lambda=\sigma_1$ and try again. After the is rejected, we have the values 
+\begin{equation}
+f(0),\; f(\lambda_c) \; \; and \; \; f(\lambda_p)
+\end{equation}
+where $\lambda_c$ and $\lambda_p$ are the most recently rejected values of $\lambda$. The polynomial that interpolates $f$ at $0$, $\lambda_c$, $\lambda_p$ is 
+\begin{equation}
+p(\lambda)= f(0) + \frac{\lambda}{\lambda_c - \lambda_p}(\frac{(\lambda-\lambda_p)(f(\lambda_c)-f(0))}{\lambda_c} + \frac{(\lambda_c-\lambda)(f(\lambda_p)-f(0))}{\lambda_p})
+\end{equation}
+We must consider two situations. If $p''(0)>0$, then we set $\lambda_t$ to the minimum of $p$, 
+$\lambda_t= -p'(0)/p''(0)$, and apply safeguarding \ref{lambda+} to compute $\lambda_+$. If $p''(0) \leq 0$ one could either set $\lambda_+$ to be minimum of $p$ on the interval $[\sigma_0 \lambda, \sigma_1 \lambda]$ or reject the parabolic model and simply set $\lambda_+= \sigma_1  \lambda_c$. \\
 
 
+\noindent\textbf{Globalization in inexact Newton method}.
+As we saw, the globalization of the convergence in Newton methods is about ensuring that the step $k+1$ will reduce the norm of $F$, even through a constant less than 1, that is $||F(x_k+1)||< \alpha ||F(x_k)||$, with $0< \alpha \le 1$.
+That means that the direction $s_k$ should be \textit{descent direction}. \\
+
+Let's consider this minimization problem 
+\begin{equation}
+\min_{x \in \mathbb{R}^N}{f(x) = \frac{1}{2} F(x)^TF(x)}.
+\end{equation}
+A descent direction for $f$ at the current approximation $x$ is any vector $p$ such that:
+\begin{equation}
+\label{descendf}
+\nabla f(x)^T p < 0.
+\end{equation}
+Easily we can show that, being $\nabla f(x)^T p = J(x)^T F(x)$, with $J(x)= F'(x)$, \ref{descendf} is equal to 
+\begin{equation}
+\label{descendF}
+F(x)^T J(x) p < 0.
+\end{equation}
+For such a direction, it is shown that there exists a certain $\lambda_0 > 0$  such that $ f(x + \lambda p) < f(x) \; \; \forall \lambda \; \; : \; \; 0 < \lambda \le \lambda_0$. \\
+
+If we are solving $J(x_{k+1}) s_k = - F(x_k)$ with a \textit{direct method}, so $s_k$ is the exact solution, because of the characteristics of Newton methods, it will be always a descent direction. This is not always true when we just approximate $s_k$ with an \textit{iterative method}. \\
+
+Let's be in the case of Newton-Krylov method with GMRES and put for simplicity $F=F(x)$ and $J= J(x)$, consider $\bar{s}$ as a approximation of $Js = - F$. Then we can write
+\begin{equation}
+F^TJ\bar{s}= -F^TF - F^T\bar{r}
+\end{equation}  
+with $\bar{r}=-F-J\bar{s}$; $ \bar{s}$ will be the descent direction for $f$ at $x$ whenever $|F^T\bar{r}|<F^TF$, in particular, if 
+\begin{equation}
+\label{conddescend}
+||\bar{r}||<||F||,
+\end{equation}
+ then $\bar{d}$ is a descent direction. \\
+ 
+ Condition \ref{conddescend}  means that the norm in GMRES must be reduced strictly. It holds whenever the Jacobian matrix $J$ is positive real and at least one step of GMRES is performed. But these hypothesis on $J$ are too restrictive, so a milder condition is to assume that the dimension $m$ in GMRES is large enough to ensure that the final residual is reduced by a factor of at least $\eta$, where $\eta$ is a scalar less than 1. This is how we arrive again at the expression of inexact Newton method
+ \begin{equation*}
+ ||F'(x_n)s+F(x_n)|| \leq \eta ||F(x_n)||.
+  \end{equation*}
+ \subsubsection{Trust region} Let $x$ be the current approximate solution of $F(x)=0$. The effect of using a Krylov method to solve the Newton equations $J(x)d= -F(x)$ approximately is to take a step from $x$ of the form $x + s$, where $s$ is in the affine subspace $d_0 + \mathcal{K}_m$. If $V_m =[v_1,...,v_m]$ is an orthonormal basis for $\mathcal{K}_m$ and the initial guess $d_0 =0$, then $d = V_m y$, for some $y \in \mathbb{R}^m$, and we have a step of the form $x + V_m y$. \\
+ As we introduced before, our global strategy will again be based upon finding a local minimum of the real-valued function $\frac{1}{2} F(x)^TF(x)$. Thus, we want to solve 
+ \begin{equation}
+ \label{minimiz_f}
+ \min_{y \in \mathbb{R}^m}{f(x + V_m y)}.
+ \end{equation}
+ Letting $g(y) = f(x+V_m y)$, we have 
+ \begin{equation}
+ \nabla g(y) = (J(x +V_my)V_m)^TF(x+ V_my)
+ \end{equation}
+and, in particular, that 
+ \begin{equation}
+ \nabla g(0) = (JV_m)^TF.
+ \end{equation}
+If we use $F +J V_m y$ as a linear model of $F(x +V_m y)$, then the quadratic model for $g$ is 
+\begin{equation}
+\hat{g}(y)= \frac{1}{2} ||F+JV_my||^2
+\end{equation}
+ Letting $B_m = V_m^TJ^TJV_m$, we have 
+ \begin{equation}
+ \label{ghat}
+ \hat{g}(y) = \frac{1}{2} F^TF+F^TJV_my+\frac{1}{2} y^TB_my
+ \end{equation}
+ where $B_m$ is symmetric and positive semidefinite, and $\nabla \hat{g}(0) = \nabla g(0)$. If $J$ is non-singular, then $B_m$ is positive definite, since $V_m$ has orthonormal columns. The model trust region approach, that we are considering, will be based upon trying to find a solution of the problem
+ \begin{equation}
+ \label{minghat}
+ \min_{||y||\le \tau}{\hat{g}(y), \; \; y \in \mathbb{R}^m}
+ \end{equation}
+ where $\tau$ is an estimate of the maximum length of a successful step to take from $x$ and, also, a measure of the size of the region in which the local quadratic model $\hat{g}(y)$ closely agrees with the function $g(y)$. The solution of \ref{minghat} is in this lemma:
+ \begin{theorem}
+ Let $\hat{g}(y)$ be defined by \ref{ghat}, and assume that J is nonsingular. Then problem \ref{minghat} is solved by
+ \begin{equation}
+ y_m(\mu)= (B_m + \mu I)^{-1}z_m,
+ \end{equation}
+ where $z_m= -\nabla\hat{g}(0)$, for the unique $\mu$ such that $||y_m(\mu)||=\tau$, unless $||y_m(0)||\le \tau$, in which case $y_m(0)= B_m^{-1}z_m$ is the solution.
+ Furthermore, $\forall \mu \ge 0$, $s(\mu)= V_my_m(\mu)$ defines a descend direction for $f(x)= \frac{1}{2}F(x)^TF(x)$ for x, as long as $z_m \neq 0$.
+ \end{theorem}
+ The proof is made for Lemma 4.1 in \cite{Saad}.\\
+ In the case in which $||y_m(0)||>\tau$, we can't determinate $\mu$ such that $||y_m(\mu)||=\tau$, so we solve \ref{minghat} approximately. 
+ For example, there is a dogled strategy \cite{Powell} that makes a piecewise linear approximation to the curve $y_m(\mu)$, and takes $\hat{y}_m$ as the point on this curve for which $||\hat{y}_m||=\tau$. We then define $x_{k+1}= x_k + \bar{d}$, where $\bar{d} = V_m \bar{y}_m$. If the iterate $x_{k+1}$ satisfied a condition like this 
+ \begin{equation}
+ f(x+\bar{d})\le f(x) + \alpha \nabla f(x)^T \bar{d}
+ \end{equation}
+ with $0<\alpha<1$, we proceed to the next step, otherwise, a new value of the trust region size $\tau$ is chosen, and the procedure is repeated.\\
+\noindent\textbf{Trust region for GMRES}. Here $\mathcal{K}_k$ and $V_k$ are generated using the GMRES algorithm. So we can reformulate the minimization problem \ref{minghat}. First we note that if $d_0 = 0$ and $m$ steps are taken, than we have 
+\begin{equation}
+z_m = -\nabla \hat{g}(0) = - (JV_m)^TF = - \beta \bar{H}_m^Te_1.
+\end{equation}
+This direction is reffered to as the \textit{steepest descent direction} for $\hat{g}(y)$ at $y=0$, and is the same as that for $g(y)$. In \cite{Saad} is also shown that $B_m = \bar{H}_m^T \bar{H}_m$. So \ref{ghat} becomes :
+\begin{equation}
+\hat{g}(y)= \frac{1}{2} F^TF + \beta e_1^T\bar{H}_m y + \frac{1}{2} y^T \bar{H}_m^T\bar{H}_my
+\end{equation}
+Minimizing $\hat{g}(y)$ is the steepest direction means to minimize 
+\begin{equation}
+\hat{g}(\alpha z_m)= \frac{1}{2} F^TF + \alpha \beta e_1^T\bar{H}_m z_m + \frac{\alpha^2}{2} ||\bar{H}_mz_m||^2
+\end{equation}
+ The optimal value of $\alpha$ is 
+ \begin{equation}
+ \alpha_{opt} = \frac{||z_m||^2}{||\bar{H}_m z_m||^2}
+ \end{equation}
+ which is defined as long as $d_m \ne 0$, since $\bar{H}_m$ has full column rank. After some calculations, made in  \cite{Saad}, we arrive at :
+ \begin{equation}
+ y_{GM}= (\bar{H}_m^T \bar{H}_m)^{-1} z_m
+ \end{equation}
+ E' DA FINIRE..
 \bibliographystyle{siamplain}
 \bibliography{references}
+
+\begin{thebibliography} {99}
+	
+	\bibitem {Kelley1} C.T.Kelley. Solving Nonlinear Equations with Newton's Method.  \textit{SIAM Fundamentals of Algorithms, Philadelphia, 2003.}
+	
+	
+	\bibitem {Kelley2} C.T.Kelley. Iterative Methods for Linear
+	and Nonlinear Equations. \textit{SIAM Philadelphia, 1995.}
+	
+	
+	\bibitem {Forcingterm} Eisenstat SC, Walker HF. Choosing the forcing terms in an inexact Newton method. \textit{SIAM Journal on Scientific Computing 1996; 17 : 16-32.}
+	
+	\bibitem {GMRES} Saad Y, Schultz MH. GMRES: a generalized minimal residual method for solving nonsymmetric linear systems. \textit{SIAM Journal on Scientific and Statistical Computing 1986; 7 : 856-869.}
+	
+	\bibitem {Emil} Emil C\v{a}tinas. The inexact, inexact perturbed,and quasi-newton methods are equivalent models. \textit{Mathematics of computation, March 23, 2004; Volume 74, Number 249, Pages 291-301.}	
+	
+	\bibitem {Saad} Peter N. Brown, Youcef Saad: Hybrid Krylov methods for nonlinear systems of equations. \textit{SIAM, J. Sci. and Stat. Comput., May, 1990; Volume 11, Number 3, Pages 450-481.}	
+	
+	\bibitem {Powell} M. J. D. Powell, A hybrid method for nonlinear equations.\textit{P. Rabinowitz, ed., Numerical Methods for Nonlinear Equations, Gordon-Breach, New York, 1970.}
+
+	
+	\end{thebibliography}
+
 \end{document}
