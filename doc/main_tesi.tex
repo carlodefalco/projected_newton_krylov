@@ -1,0 +1,181 @@
+\documentclass[12pt,a4paper,oneside,openright]{book}
+\renewcommand{\thesection}{\arabic{section}}
+%\usepackage{hyperref} % per link nel documento 
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+%\usepackage{biblatex}
+\usepackage[numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{graphicx} 
+\usepackage{indentfirst} 
+\usepackage{url}
+\usepackage{fancyvrb} 
+\usepackage{listings} 
+\usepackage[]{fncychap}
+\usepackage{amsfonts}
+\usepackage[bf,small]{caption}
+\usepackage{xcolor}
+\usepackage{changebar}
+\usepackage[ruled,linesnumbered]{algorithm2e}
+\usepackage{lipsum}                     % Dummytext
+\usepackage{xargs} 
+\usepackage{bbm}
+\usepackage{bbold}  
+\usepackage[english]{babel}
+\selectlanguage{english}
+\usepackage{url}
+\usepackage{lipsum}
+\usepackage{amsfonts}
+\usepackage{epstopdf}
+%\usepackage{algorithm}
+\usepackage{algcompatible}
+
+%\usepackage{algorithmic}
+\usepackage{enumitem}
+\usepackage{bm} 
+%\usepackage{float} se c'è algorithm questo non serve!
+\usepackage{amsopn}
+\usepackage{chngcntr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\newtheorem{theorem}{Theorem}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\counterwithin{equation}{section}
+\counterwithin{theorem}{section}
+\newtheorem{lem}{Lemma}
+\usepackage{xr}
+
+\externaldocument{capitolo1}
+\externaldocument{capitolo2}
+\externaldocument{capitolo3}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,shadows,arrows}
+\tikzset{
+	% ->, >=stealth,
+	% line width=2.75pt,
+	every path/.style={->, >=stealth, very thick, rounded corners},
+	state/.style={
+		rectangle, rounded corners,
+		draw=black, fill=gray!20, thick,
+		minimum height=2em, inner sep=10pt, text centered
+	}
+}
+
+                   % Use more than one optional parameter in a new commands
+%\usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
+%\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+%\newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
+%\newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
+%\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+%\newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+
+
+
+\hyphenation{a-gen-tiz-za-zio-ne}
+\hyphenation{e-co-no-me-trics}
+\hyphenation{mo-dels}
+
+%\graphicspath{{immagini_multistato/}}
+\pagestyle{plain}
+
+\linespread{1.3}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.7,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+% set the default code style
+\lstset{
+	frame=tb, % draw a frame at the top and bottom of the code block
+	tabsize=4, % tab space width
+	showstringspaces=false, % don't mark spaces in strings
+	numbers=left, % display line numbers on the left
+	commentstyle=\color{dkgreen}, % comment color
+	keywordstyle=\color{blue}, % keyword color
+	stringstyle=\color{red} % string color
+}
+
+\renewcommand{\texttt}[1]{%
+	\begingroup
+	\ttfamily
+	\begingroup\lccode`~=`/\lowercase{\endgroup\def~}{/\discretionary{}{}{}}%
+	\begingroup\lccode`~=`[\lowercase{\endgroup\def~}{[\discretionary{}{}{}}%
+	\begingroup\lccode`~=`.\lowercase{\endgroup\def~}{.\discretionary{}{}{}}%
+	\catcode`/=\active\catcode`[=\active\catcode`.=\active
+	\scantokens{#1\noexpand}%
+	\endgroup
+}
+%\lstset{frame=tb,
+%  language=Java,
+%  aboveskip=3mm,
+%  belowskip=3mm,
+%  showstringspaces=false,
+%  columns=flexible,
+%  basicstyle={\small\ttfamily},
+%  numbers=none,
+%  numberstyle=\tiny\color{gray},
+%  keywordstyle=\color{blue},
+%  commentstyle=\color{dkgreen},
+%  stringstyle=\color{mauve},
+%  breaklines=true,
+%  breakatwhitespace=true,
+%  tabsize=3
+%}
+
+
+\begin{document}
+
+\include{frontespizio}
+
+\frontmatter %----------------
+
+\thispagestyle{empty}
+%\include{dedica}
+
+\tableofcontents 
+% DA METTERE INDICE
+\listoffigures
+\listoftables
+
+%\include{sommario}
+
+\mainmatter %---------------
+%
+\include{capitolo1}
+%\include{capitolo2}
+%\include{capitolo3}
+
+
+%\include{Capitolo1_teoria}
+%\include{Capitolo2_}
+%\include{cap_3}
+%\include{results}
+
+
+
+%\include{conclusioni}
+
+
+
+
+
+\appendix %---------------
+
+%\include{appendiceA}
+
+
+\backmatter %--------------
+%\phantomsection 
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{plain}
+\bibliography{bibliografia}
+
+
+\end{document}
