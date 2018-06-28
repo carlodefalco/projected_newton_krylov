@@ -29,8 +29,8 @@ dGdm     = @(m, n, p) ifelse (G0(p) >= 0, dG0dm (m, n, p), 0*p);
 dG0dn    = @(m, n, p) (200/pi) * (-4 * dpdn (m, n)) ./ (1 + (4*(PM - p)) .^2 );;
 dGdn     = @(m, n, p) ifelse (G0(p) >= 0, dG0dn (m, n, p), 0*p);
 
-N     = 600;
-dt    = 1e-3;
+N     = 5;
+%dt    = 1e-3;
 T     = 1;
 x     = linspace (Lx, Rx, N+1) .';
 
@@ -134,7 +134,7 @@ dt    = 1e-5;
 msave = mvold = mold = m;
 nsave = nvold = nold = n;
 
-for its = 2 : nt
+for its = 2 : 2%nt
   
   while (t < tsave(its))
 

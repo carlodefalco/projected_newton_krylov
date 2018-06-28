@@ -2,7 +2,7 @@
 % ho  imposto lambda = 0.8 ogni volta che 
 % si usa la direzione del gradiente. 
 
-function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
+function [x, err, mm, ee, ff, ll] = projected_newton_torna_conti (J, F, x0, bounds, opts)
   
   P        = @(x) min (max (x, bounds (:, 1)), bounds (:, 2));
 
@@ -36,6 +36,7 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
        eta_k_definitive(11), eta_k_definitive(12:end)];
 
 
+  ff(1)= 0;
   printf ("%10.10s | \t%10.10s | \t%10.10s | \t%s | \t%10.10s\n",
           "  Iterates", "    lambda",
           "     ||F||", "       eta",
@@ -59,7 +60,6 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
     ee(in)  = eta;
     err(in) = normres; 
     ll(in)  = lambda;
-    ff(in)  = flag;
     mm(in)  = m;
     
     if (in > 1)
@@ -77,7 +77,7 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
     
     d = gmres (jac, - res, n, eta, n, [], [], zeros (size (x)));      
 
-    flag = true;
+    flag = false;
     for m = 0 : maxdamp
       lambda = lambda0 ^ m;
       xnew = P (x + lambda * d);
@@ -89,37 +89,40 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
         break
       endif
     endfor
-
+x = xnew;
     if (! flag)
 
       printf ("%10.10s\n", "PN")
+      ff (end + 1) = flag;
       
     else
 
       printf ("%10.10s\n","PG")
+      ff (end + 1) = flag;
       
       d = - jac' * res;
       flag = true;
-      for m = 1:1;%0 : maxdamp             % impongo lambda = 0.8!!! 
-        lambda = lambda0G ^ m;
+      m = 1;
+      for m = 0 : 20  % impongo lambda = 0.8!!! 
+        lambda =  lambda0G ^ m;
         xnew = P (x + lambda * d);
         resnew = F (xnew);
         normresnew = norm (resnew);
-%        if ((1/2) * normresnew^2  <=
-%            ((1/2) * normres^2 +
-%             sigma * ((-d)' * (xnew - x)))
-%            || lambda * (norm (d, inf)) <=
-%               10 * eps (norm (x, inf)));
+        if ((1/2) * normresnew^2  <=   %
+            ((1/2) * normres^2 +    %
+             sigma * ((-d)' * (xnew - x))))  %
+%            %|| lambda * (norm (d, inf)) <=
+%              % 10 * eps (norm (x, inf)));
           flag = false;
           x = xnew;
-%          break
-%        endif
+          break  %
+        endif  %
       endfor
             
     endif
 
-    plot (err)
-    drawnow
+%    plot (err)
+%    drawnow
 
   endfor
 
@@ -128,5 +131,17 @@ function [x, err, mm, ee, ff, ll] = projected_newton (J, F, x0, bounds, opts)
   ee  = ee(:);
   ff  = ff(:);
   ll  = ll(:);
-  
-endfunction
+ 
+ figure ();
+ hold on;
+ for i = 1:size(err)(1)
+    if (ff(i)==0)  
+        plot (i, err(i), 'ob');
+    elseif    
+        plot (i, err(i), 'or');
+    endif  
+  endfor
+  xlabel ('iterations');
+  ylabel ('||F(x)||');
+  plot (err, '--k');
+ endfunction
