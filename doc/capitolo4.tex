@@ -1,0 +1,98 @@
+\chapter{Model of tumor growth}
+\section{Propose of the thesis}
+The main aim of our work is to propose a strategy to solve coupled nonlinear partial differential equations with constrained variables. Our attention will be focus on the main passages that are required for this kind of numerical solving, that are:
+\begin{itemize}
+	\item time discretization,
+	\item space discretization,
+	\item nonlinear method,
+\end{itemize}  
+where each point will be addressed in the next two chapters. \\
+There are many examples of problems with the features that we nominated, for example Turing systems, generally nonlinear, with variables that represent chemical concentration of two species, therefor constrained to be nonnegative. \\
+The example problem that we chose is taken from article "On interfaces between cell populations with different mobilities" \cite{tumor_growth}, because we know from previous studies on it, that it can be complicated enough to be a suitable test problem for validity and performances of our strategy.
+Let see how it is structured. 
+\section{Tumor growth problem}
+\subsection {Introduction to the model}
+We introduce a system of coupled time-depending advection-diffusion-reaction equations meat to describe the propagation of avascular tumor taken from \cite{tumor_growth}.
+\begin{equation}
+\label{tumor_system}
+\begin{cases}
+\partial_t m -\mu \; \nabla (m \nabla p) = G(p) m ,\\
+\partial_t n -\nu \; \nabla (n \nabla p) = 0 .
+\end{cases}
+\end{equation}
+Variable $ m $ indicates local density of \textit{dividing cells}, therefore those of the cancer, while $ n $ is local density of healthy cells, considered \textit{non-dividing }. Therefore both are constrained to be nonnegative. Pressure is given by a constitutive relation, in this way :
+\begin{equation}
+\label{pressure}
+p := K_\gamma (n+m)^\gamma,
+\end{equation}
+with $ K_\gamma = \frac{\gamma + 1}{\gamma} $, where $ \gamma $ is a positive parameter that controls the stiffness of pressure law. Coefficients $ \mu > 0$ and $ \nu > 0 $ stand for mobility of dividing and non-dividing cells  respectively.\\
+Second term of the left-hand-side model is a recall of the Dracy's law since is suggest the tendency of cells to move down the pressure gradient.\\
+Right-hand-side of first equation indicates reasonably that growth of division cells $ m $ is proportional to its own density trough the quantity $ G(p) $. All this model is based on the observation that proliferating cells, $ m $, exert a pressure on their neighbours, $ n $,  and this result is a cell motion, that makes the first ones push forward the seconds. However, because of the competition fo space, when the pressure is above a threshold, that it is called \textit{homeostatic pressure} $ P_M $, then the system enters in a quiescent state. For all this reasons, it is required that $ G(P_M) = 0 $ and $ G'(p) < 0 $, because when pressure increases, so the competition of space, the devision rate has to decrease. \\
+As announced in \cite{tumor_growth}, two cases has to be distinguished. When the dividing cells are more viscous ($ \nu > \mu $), so characterized by less mobility, than non-dividing ones, is supposed to generate segregation, that is $ m $ and $ n $ separated through a sharp interface.
+Second case is the opposite one, $ \mu > \nu $, that corresponds to the situation in which "more viscous fluid" expands in a "less viscous" one. This scenario is expected to generate instabilities.\\
+\subsection{One-dimensional traveling waves}
+Suppose that we are looking fro solution of the form $ m(x,t) = m (x - \sigma  t) $ and $n(x,t) = n (x - \sigma  t)$, with $ \sigma $ traveling wave's velocity. Let start with an initial condition in which $ m $ and $ n $ lie on supports and are strictly separated, that is : $ Supp (m) = (-\infty, 0] $ and $ Supp (n) =  [0,r] $, with $ r = 1 $.\\
+ Then \eqref{tumor_system} becomes:
+\begin{equation}
+\label{tumor_system_1d}
+\begin{cases}
+-\sigma m' - \mu (mp')' = G(p)m, \\
+- \sigma n' - \nu (n p')' = 0
+\end{cases}
+\end{equation}
+The reaction term is chosen in this way $ G(p) = P_M -p $. If we suppose that $ p' $ vanishes at $\pm \infty$, then from the second equation of \eqref{tumor_system_1d}, it is obtain:
+\begin{equation}
+\label{eqn}
+(\sigma + \nu p')n = \sigma n_{\infty},
+\end{equation}
+where $ n \rightarrow n_{\infty} $ for $ x \rightarrow \infty $. In general we will take the case $ n_\infty = 0 $, consequently, from \eqref{eqn}, it comes:
+\begin{equation}
+\label{pn}
+p_n(\xi) = \frac{\sigma}{\nu} (r - \xi),
+\end{equation}
+with $ \xi = x - \sigma t $ and $ x \in [0, r] $. Since $ m  $ is equal to 0 in the support of $ n $, using \eqref{pressure}, the solution of second equation in \eqref{tumor_system_1d} is :
+\begin{equation*}
+n(\xi) = \Big(\frac{p(\xi)}{K_\gamma} \Big)^\frac{1}{\gamma}.
+\end{equation*}
+While to find the solution of first equation in \eqref{tumor_system_1d}, we need to put ourselves in the case of large $ \gamma $ (incompressibility limit), that can be seen as  $ \gamma =  \frac{1}{\epsilon} $, with $ 0 < \epsilon << 1 $. Adding the equations of \eqref{tumor_system_1d}, it is obtained
+\begin{equation}
+\label{sum_eq}
+-\sigma (m  + n)' - ((\mu m + \nu n)p')' = m G(p).
+\end{equation} 
+In particular, on the support of $ m $, it becomes: 
+\begin{equation*}
+-\sigma p ' - \mu (p'^2 + \gamma p p'') = \gamma p G(p).
+\end{equation*}
+We look for a solution of the following form: 
+\begin{equation}
+\label{pm}
+p_m(\xi) = P_0(\xi) + \epsilon  P_1 (\xi),
+\end{equation}
+with $ p(-\infty) = P_M $.\\
+Now, if we integrate \eqref{sum_eq}, it becomes : $ -\sigma (m + n) (x) - ((\mu m + \nu n) p')(x) = \int^{1}_{x} mG(p)$. By the continuity of $ m $, $ n $ and, consequently, of $ p $, and \eqref{pn}, this expression is obtained:
+\begin{equation*}
+p'(0^-) = \frac{\nu}{\mu} p'(0^+)=-\frac{\sigma}{\mu}.
+\end{equation*} 
+This is used as boundary condition for \eqref{pm}, then, if we neglect the part multiplied by $ \epsilon $, we obtain :
+\begin{eqnarray}
+\label{solpm}
+p_m(\xi) = P_M + (\frac{\sigma}{\nu} - P_M) \exp \Big({\frac{\xi}{\sqrt{\mu}}}\Big), \; \; \; \text{with} \; \; \;
+\sigma = \frac{P_M \sqrt(\mu) \nu}{r\sqrt{\mu} + \nu}.
+\end{eqnarray}
+The expression of $ p_m(\xi) $ and $ p_n(\xi) $ can be used as initial guess, putting $ \xi = x $, and then, a way to validate the chosen numerical method, is to verify if the wave's velocity, that we see in the simulations, is the theoretical one of \eqref{solpm}.
+Theory of this section is taken from \cite{tumor_growth}, but there is also a contribution from professor Pasquale Ciarletta, that helped us finding the expression of the solution.\\
+\subsection{Bi-dimensional propagation}
+In paper \cite{tumor_growth} it is investigated also the behaviour of two-dimensional spherical waves with zero Neumann boundary conditions and initial conditions:
+\begin{equation*}
+m(x,y,t=0) := a_m e^{-b_m (x^2 + y^2)} \; \; \; \; \text{and}\; \; \; \; n(x,y,t=0) := a_n e^{-b_n (x^2 + y^2)} ,
+\end{equation*}
+with 
+\begin{equation*}
+a_m = 0.1, \; \; \; a_n =0.8, \; \;\; b_m = 5 \times 10^{-1}, \; \; \; b_n = 5 \times 10^{-7}.
+\end{equation*}
+Furthermore, reaction term is defined in the following way 
+\begin{equation*}
+G(p):= \frac{200}{\pi}\arctan(4(P_M-p))_+, \;\;\; P_M = 30,
+\end{equation*}
+with a domain of  $[0, L] \times [0, L]$, with $ L = 45 $.\\
+We are going to test both one and bi-dimensional case, taking settings used by them as a first test, and then trying to stimulate the problem in different ways in order to test out strategy of solving. 

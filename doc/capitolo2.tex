@@ -1,5 +1,5 @@
 \chapter{New method for constrained non linear problems}
-Many times the unknowns that are involved in nonlinear systems are constrained, like, for example the concentration of some substances, that needs to be greater than zero. One of the ways to guarantee this, is to project the solution into the domain at each Newton's step, landing at the so-called projected Newton method.\\
+In general we are interested in nonlinear problems in which variables are constrained and, in particular, this is what happens in out test problem.  One of the ways to guarantee that the approximation of the solution respects the constraints, is to project the solution into the domain at each Newton's step, landing at the so-called projected Newton method.\\
  In this chapter we start introducing a new projected Newton-Krylov method for nonlinear problems, suggested in a recent paper called "Globalization technique for projected Newton-Krylov methods" published by Jinhai Chen and Cornelis Vuik \cite{MAIN}. The purpose is to fix the biggest defect of the already existing projected Newton-Krylov method, that is no guarantee of convergence, keeping all the advantages. Since, as we will see, the projected Newton direction is not always a descent one, while, if multiplied by a suitable scalar, the projected gradient direction it is , the idea is to switch on the second one all the times the fist one is not satisfactory.\\
  It was already known in theory that a sequence of $\{ \textbf{x}_k\} $, computed in this way $ \textbf{x}_{k+1} = \textbf{x}_{k} + \alpha \textbf{d}_k $, with $ \alpha $ a suitable length of the step and $ \textbf{d}_k $ a projected newton direction of $ \Theta (\textbf{x}_k) = \frac{1}{2} ||F (\textbf{x}_k)||^2$, converges to a stationary point of $ \Theta (\textbf{x}) $. What the authors of \cite{MAIN} add to the assertion, is that with a mixed use of projected Newton and projected gradient direction, $ \{\textbf{x}_k\} $ still ends in a stationary point, and more important, if the second direction is used finitely many times, then the sequences arrives in a zero of $ \Theta(\textbf{x}_k) $, which is what we are interested in.\\
  We report also two examples of the paper, one analytical, that shows a situation in which projected gradient direction is better that the projected newton one, and the other numerical, supposed to show the performance of the method. It was not easy to replay this one by ourselves, because lack of information, and in the end we realized that results shown in the paper were not compatible with the features of the concerned method, but at least we verified that, for that specific case, the use of projected gradient direction was essential, even if it was slow.\\
@@ -19,7 +19,7 @@ with $ F: \mathbb{R}^n \rightarrow \mathbb{R}^n  $ continuously differentiable a
 	\caption{projected Newton-Krylov}
 	\label{pNK}
 	\begin{algorithmic}[1]
-		\STATE 	$ \textbf{x}_0 \in [0, \infty) $, $ t \in (0,1) $, $ \eta_{max} \in [0,1) $, $ m_{max} \in \mathbb{N}  $ and $ 0 <  \lambda_{min} < \lambda_{max} < 1$
+		\STATE 	$ \textbf{x}_0 \in \mathbb{R}^{n}_{+} $, $ t \in (0,1) $, $ \eta_{max} \in [0,1) $, $ m_{max} \in \mathbb{N}  $ and $ 0 <  \lambda_{min} < \lambda_{max} < 1$
 		\FOR{$k = 1, 2, \dots$ until convergence}
 		\STATE Choose $\eta_k \in [0,\eta_{max}]$ and find $\textbf{d}_k$ that satisfy
 		\STATE $ ||F(\textbf{x}_k) + F'(\textbf{x}_k)\textbf{d}_k||\leq \eta_k||F(\textbf{x}_k)|| $
@@ -39,14 +39,14 @@ In line 3 the forcing term $ \eta_k $ is computed with the techniques shown in s
 The other part of the name comes from the presence of $ \mathcal{P} $, that is a orthogonal projection on the domain, in this case $[0, \infty)$. So if we need non-negativity, we will have that the $i$th entry of $ \mathcal{P}(\textbf{x}) $ is defined by 
 \begin{equation*}
 \mathcal{P}_i(\textbf{x}) = \begin{cases}
-x_i\;\;\;\; if\;\;\;\; x_i \geq 0\\ 0 \;\;\;\; otherwise .
+x_i\;\;\;\; if\;\;\;\; x_i \geq 0\\ 0 \;\;\;\; \text{otherwise} .
 \end{cases}
 \end{equation*}
 This is one of the simplest projection operator.
 More precisely, this projection assigns to each component of $ \textbf{\textbf{x}} $, that is out of the constrains, the value of the broken restriction. So, in this case, non-negativity is prevent for all the variables of mass fraction.\\
 An other important fact is that the local convergence of the Newton method is not affected, because of the non-expansiveness of the projection operator, as we will see in \textit{(c)} of Lemma \ref{lemma_grad}.
 
-\section{Projected Newton-Krylov method mixed projected gradient direction}
+\section{Projected Newton-Krylov method mixed with projected gradient direction}
 \subsection{Idea}
 The work done in \cite{before_MAIN} shows that projected Newton-Krylov method is successful, where the classical nonlinear solver packages were not easy to use with such a big scale problem. Nevertheless, as the classical Newton method, this method does not guarantee global convergence; indeed, the search direction found by projected-Newton could not be a descent one, so could not minimize the norm of the underlying function $F$. Just to be more precise, defined $ \Theta (\textbf{x}) = \frac{1}{2} ||F(\textbf{x})||^2$, then $\textbf{d} $ is a descent direction for $\Theta (\textbf{x})  $ at point $\textbf{x}$ if  
 \begin{equation}
@@ -359,7 +359,7 @@ The geometrical scenario is illustrated in Figure \ref{esempio7}, where we see t
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.7\linewidth]{example7}
-	\caption[newton and gradient direction]{blue Newton direction (projected and not), green is gradient direction (projected and not)}
+	\caption[Newton and gradient direction]{Blue arrows are Newton directions (projected and not), while green ones are gradient directions (projected and not). We see how the projected Newton direction (PND) is increasing for the norm of $ F $ since it lies in the semi-plane in which the function is supposed to grow, that is the semi-plane that has the opposite of the GD. Instead, the projection of the gradient direction (PGD) is in the decreasing semi-plane.}
 	\label{esempio7}
 \end{figure}
 
@@ -388,7 +388,7 @@ For the choice of forcing term $ \eta_k $ the authors just say that they used on
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.6\linewidth]{results_example8}
-	\caption[Table of results of example 8 in \cite{MAIN}]{Table of results of Example 8 in \cite{MAIN}, PN indicates projected Newton direction and PG projected gradient direction}
+	\caption[Table of results of example 8 in \cite{MAIN}]{Table of results of Example 8 in \cite{MAIN}, PN indicates that it was used projected Newton direction and PG projected gradient direction. The values of columns of $ \lambda $ and $ ||F(\textbf{x})|| $ are shifted by one respect to the others; indeed the norm of $ F $ that was achieved in iteration 1 and the $ \lambda $ that was used are the one in the second row.}
 	\label{results_example8}
 \end{figure}
 First of all, we have to point out that in Figure \ref{results_example8}, each value of $ ||F(\textbf{x})|| $ is actually the input value of that iteration, so, for example, $ 3.4873 $ corresponds to $ ||F(\textbf{x}_0)|| $, and the value in the second iteration is the residual norm that comes from the first iteration. The same is true for values of $ \lambda $ , so the columns of $ \lambda $ and $ ||F(\textbf{x})|| $ are shifted by one iteration respect to the other two columns.\\
@@ -397,19 +397,19 @@ Another thing that we noticed, more important, was that, in order to have the sa
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=1\linewidth]{ourresults8}
-	\caption[Table of our results for example 8 in \cite{MAIN}]{Table of our results for Example 8 in \cite{MAIN}}
+	\caption[Table of our results for example 8 in \cite{MAIN}]{Table of our results for Example 8 in \cite{MAIN}. We manage to generate this results, that are equal to the ones in Figure \ref{results_example8}, at least in the first 16 iterations, with a revers iterative technique that found the missed information, that is the choice for $ \eta_k $. But we had also to impose $ \lambda = 0.8 $ in each PG step, even if the inequality \eqref{ineqPG} was not satisfied.}
 	\label{our_example8}
 \end{figure}
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{res_paper}
-	\caption[Plot of residuals without correction]{Residual norms according to paper's result, blu point are PN and red ones are PG}
+	\caption[Plot of residuals found in \cite{MAIN}]{Residual norms according to paper's result, blu point are PN and red ones are PG. We see that they does not respect the main characteristic of the analyzed method, that is that the norm of $ F $ has not to increase. This happens because inequality \eqref{ineqPG} is not satisfied.}
 	\label{res_paper}
 \end{figure}
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{res_our}
-	\caption[Plot of residuals with correction]{Residual norms according to our results after the correction}
+	\caption[Plot of residuals found by us]{Residual norms that we obtained implementing Algorithm \ref{pNK} in the right ways. In this case the number of iterations is much bigger than the one promised in the paper and a lot of PG are used, reason for which the convergence is slow.}
 	\label{res_our}
 \end{figure}
 Actually, there was no need to implement all by our self to see that there is something wrong. In fact, if we notice the trend of the residual norm in Figure \ref{results_example8} and \ref{res_paper}, we realize that is not non-increasing. That should not happen when \eqref{ineqPG} is verified, since $ \sigma $ has to be positive and $\nabla \Theta(\textbf{x}_k)^T (\mathcal{P}(\textbf{x}_k + \lambda \textbf{d}_k)- \textbf{x}_k)  $ has to be negative because the projected gradient direction is a descent one (Lemma \ref{lem_descent}). So the residual norm has to be strictly decreasing. \\

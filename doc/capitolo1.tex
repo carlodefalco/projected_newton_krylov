@@ -1,7 +1,7 @@
 \chapter{Newton methods for nonlinear problems}
 Often in mathematical modeling nonlinear equations can be encountered and it is quite common that they can not be solved analytically. In this case, therefore, the solutions must be approached using \textit{iterative methods}.
-The one that we are going to analyze is the Newton's method, which is a particular case of \textit{fixed point iteration method}. \\
-In this chapter we will first introduce the standard Newton's method for nonlinear problems, in which each step solves a linear system where left-hand-side is the Jacobian of the nonlinear system and right-had-side the evaluation of the problem in a guess, that is computed from the previous step. Only the fist guess is chosen, and we will see the importance of this choice, since the convergence is local. Then we will list some of the most common \textit{quasi Newton's methods}, that are methods in which the Jacobian is approximated, and indicate how the convergence is affected. On the other hand, also \textit{quasi-Newton methods} will be introduced, that, at each step, solve the linear system non exactly. Our concern will be on Newton-Krylov methods and, in particular, on the Generalized Minimal Residual (GMRES). In section 3.2 we will give an idea of why quasi-Newton methods and inexact Newton methods can be seen as equivalent. \\
+In this chapter we will address the main aspects of the theory of the Newton's method, which is a particular case of \textit{fixed point iteration method}. This will we useful to prepare the ground for the numerical method that we have planned to test. \\
+First of all we will introduce the standard Newton's method for nonlinear problems, in which each step solves a linear system where left-hand-side is the Jacobian of the nonlinear system and right-had-side the evaluation of the problem in a guess, that is computed from the previous step. Only the fist guess is chosen, and we will see the importance of this choice, since the convergence is local. Then we will list some of the most common \textit{quasi Newton's methods}, that are methods in which the Jacobian is approximated, and indicate how the convergence is affected. On the other hand, also \textit{quasi-Newton methods} will be introduced, that, at each step, solve the linear system non exactly. Our concern will be on Newton-Krylov methods and, in particular, on the Generalized Minimal Residual (GMRES). In section 3.2 we will give an idea of why quasi-Newton methods and inexact Newton methods can be seen as equivalent. \\
 In the end, we will illustrate some common techniques meant to globalizate the convergence, with more focus on line search approach. 
  
 \section{Introduction of the Method}
@@ -447,9 +447,9 @@ where $\textbf{g}_k= Q_k \beta \textbf{e}_1$ . Since the last row of $R_k$ is ze
    One of the simplest condition imposes that the new $\textbf{x}_{k+1}$ has to make \textit{decrease} $||F||$, therefore:
    \begin{gather*}
    	\lambda = 1\\
-   while \;\;\;\; ||F(\textbf{x}_{k} + \lambda \textbf{d}_k)|| \geq ||F(\textbf{x})||\\
+   \text{while} \;\;\;\; ||F(\textbf{x}_{k} + \lambda \textbf{d}_k)|| \geq ||F(\textbf{x})||\\
    \lambda = \lambda /2 \\
-   endwhile\\
+   \text{endwhile}\\
    \textbf{x}_{k+1}=\textbf{x}_k + \lambda \textbf{d}_k
    \end{gather*}
      We call this method \textit{line search} because we search along the line segment
@@ -459,10 +459,10 @@ where $\textbf{g}_k= Q_k \beta \textbf{e}_1$ . Since the last row of $R_k$ is ze
      to find a decrease of $||F||$. As we move from the right endpoint to the left, usually this procedure is called \textit{backtracking}.\\
     There is also another condition, that impose the new $\textbf{x}_{k+1}$ to make \textit{sufficiently decrease} $||F||$,
     \begin{gather*}
-    	\lambda = 1 \; \; and \; \; \alpha \in (0,1)\\
-    	while \; \;\;\;||F( \textbf{x}_{k} + \lambda \textbf{d}_k)|| \geq (1-\alpha\lambda)||F(\textbf{x})||\\
+    	\lambda = 1 \; \; \text{and} \; \; \alpha \in (0,1)\\
+    	\text{while} \; \;\;\;||F( \textbf{x}_{k} + \lambda \textbf{d}_k)|| \geq (1-\alpha\lambda)||F(\textbf{x})||\\
     	\lambda = \lambda /2 \\
-    	endwhile\\
+    \text{endwhile}\\
     	\textbf{x}_{k+1}=\textbf{x}_k + \lambda \textbf{d}_k
     \end{gather*}
    This approach is called \textbf{Armijo rule}. \\
@@ -492,7 +492,7 @@ where $\textbf{g}_k= Q_k \beta \textbf{e}_1$ . Since the last row of $R_k$ is ze
   	\label{lambda+}
   	\sigma_0\lambda_c \; \; if \; \; \lambda_t<\sigma_0\lambda_c, \\
   	\sigma_1\lambda_c \; \; if \; \; \lambda_t>\sigma_1\lambda_c,\\
-  	\lambda_t \; \; \; \; otherwise
+  	\lambda_t \; \; \; \; \text{otherwise}
   	
   	\end{cases}}
   \end{equation}
