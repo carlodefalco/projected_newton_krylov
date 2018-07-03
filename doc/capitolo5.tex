@@ -10,8 +10,13 @@ One common way to discretize in time is to use Eulero's backward method, that co
 \begin{equation*}
 u_{n+1} = u_n +  \Delta_n t \; f(t_{n+1}, u_{n+1}), \; \; \; \text{with}\; \; \; u_i := u(t_i)\; \;\; \text{and} \; \;\; \Delta_n t = t_{n+1}-t_n .
 \end{equation*}
-Actually this is what we want to use, but in general we know that its order of convergence is only 1. Therefore, we expect that, if we ask high accuracy, a really small time step has to be adopted, but this can be really expensive when we try to solve a nonlinear problem with a not coarse mesh. \\
-This is why we opted for a time adaptivity strategy, that uses a local extrapolation method which at each time step, essentially, gives the maximum length of $ \Delta_n t $ that guarantee the prearranged accuracy. \\
+Actually this is what we want to use, but in general we know that its order of convergence is only 1, which means that the norm of the difference between the real and the approximated solution is bounded by $ \Delta t $ through a constant,
+\begin{equation}
+|| u - u_{ex}|| < C \Delta t.
+\label{ord_1}
+\end{equation}
+ Therefore, we expect that, if we ask high accuracy, a small time step has to be adopted, but this can be really expensive when we try to solve a nonlinear problem with a not coarse mesh. \\
+This is why we opted for a time adaptivity strategy, that uses a local extrapolation method which at each time step, essentially, gives the maximum length of $ \Delta_n t $ that guarantee the prearranged accuracy. We will see that the convergence order will be again 1, but with a smaller constant $ C $, that permits bigger time step.\\
 This can happen if we construct two approximations of $ u (t_{n+1}) $  at each time step and, therefore, their difference is an estimate of the local error for the less precise result and can be used as a step size control. Let see how.
 \subsection{Truncation error}
 First of all, we will show how the difference of the two approximations is a good estimate of the local error. \\
@@ -24,7 +29,7 @@ This one represents out first approximation of the solution in $ t_{n+1} $, whil
 \begin{equation*}
 u_{n+1} := \hat{u}_n + \Delta_n t \; f(t_{n+1} , u_{n+1}).
 \end{equation*} 
-Local truncation error is the difference between exact and numerical solution in the current, that is $ \tau_{n+1} := \hat{u}_{n+1} - u_{n+1} $.\\
+Local truncation error is the difference between exact and numerical solution in the current step, that is $ \tau_{n+1} := \hat{u}_{n+1} - u_{n+1} $.\\
 Keeping in mind Taylor expansion of the exact solution in $ t_{n+1} $,
 \begin{equation*}
 \hat{u}_{n+1} := \hat{u}(t_{n+1}) = \hat{u}(t_{n} + \Delta_nt) = \hat{u}_n + \Delta_nt \; \hat{u}_n^\prime + C \Delta_nt^2,
@@ -74,20 +79,26 @@ This means that the difference between $ u^0_{n+1} $ and $ u_{n+1} $ is not anym
 What we notice is that $ \Delta t $ is computed at each step, in line 16, using the information $ \frac{tol}{err} $, that indicates how much norm of the difference between initial guess and numerical solution, called error, is lower than the tolerance. Smaller is the error, bigger is the time step's length that we can afford. Safety parameters, as $ facmax, facmin $ and $ fac $, are chosen not to allow $ \Delta t $ do increase o decrease too fast. 
 For example for the value of $ fac $ we have different proposal in \cite{solvingordeq}, like $ 0.8 $, $ 0.9 $, $\sqrt{0.25}  $ and $ \sqrt{0.38} $ and we will use last one. \\
 \subsection{Order of convergence}
-Depending on the value of $ tol $ that we choose, Algorithm \ref{ta} will do a certain number $ N $ of time steps. Even if the steps will be different, we can consider $ \frac{1}{N} $ as an indicator of the mean step's length and what happens is that $ tol$ is of order $ (\frac{1}{N})^2 $, which means that if we set $ tol = 0.01 $, then we will need to execute $ 10 $ time steps in the interval $ [t_0, T] $. But what happens with the error, that is , the difference between the exact solution and the numerical one? \\
+Depending on the value of $ tol $ that we choose, Algorithm \ref{ta} will do a certain number $ N $ of time steps. Even if the steps will be different, we can consider $ \frac{1}{N} $ as an indicator of the average step's length and what happens is that $ tol$ is of order 2, that means $ tol \sim (\frac{1}{N})^2 $. But what about the order of the error, that is , the difference between exact and numerical solution? \\
 We decided to show it with an example:
 \begin{equation*}
 u^\prime = 10 \cos (t) - 3u,
 \end{equation*}
 with exact solution $ u_{ex} = \sin (t) + 3 \cos (t) $. \\
-We implemented Algorithm \ref{ta} with different values of $ tol $ and then plotted with a logarithmic scale the error and the values of $ tol $ respect to $ N $.
-In Figure \ref{time_order} it is shown how the tolerance is related to $ N $ with a second order, while the error with a order one. This is not what we found in Section 1.1, but as we said before, this is because, in practice, we don't have the exact solution at the previous step. \\
-What we conclude from it, is that if we want to have ad accuracy of $ 0.01 $, then we have to choose a tolerance equal to $ 0.01^2 $ that will make us compute $ 100 $ time steps.
+We implemented Algorithm \ref{ta} with different values of $ tol $ and then we plotted the error and the values of $ tol $  respect to $ N $ with a logarithmic scale .
+In Figure \ref{time_order} it is shown how the tolerance $ tol $ is related to $ N $ with a second order, while the error with a order one. We found in Section 1.1 that they should be of the same order, but as we said before, this is because we don't have the exact solution at each previous step and the loss of one order is what we have to pay. What do we gain with this procedure if the order is the same of backward Eulero?\\
+In the same example, we test both normal Eulero backward and time adaptivity method, in order to compare how many time steps were needed by both of them to achieve the same accuracy. Figure \ref{num_spets} shows that with the time adaptivity method less time steps are required, more precisely they are circa $ 18\% $ less for each test. This is because, as we anticipated before, the value of $ C $ in \eqref{ord_1} is smaller with this technique.
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=1\linewidth]{time_order}
-	\caption[Logarithmic plot of convergence orders is time adaptivity]{The logarithmic plot shows how tolerance , $ tol $, on the difference between the two approximations of the solution, that are numerical solution and initial guess, is of second order respect to $ \frac{1}{N} $, while the error, that is the norm of the difference between exact solution and numerical one, $|| u -u _{ex}||_{\infty}$, is of order one. That means that if an accuracy of $ 0.01 $ is required, then $tol$ has to be equal to $ 0.01^2 $ and, consequently, $ 100 $ time steps will be computed. }
+	\caption[Logarithmic plot of convergence orders is time adaptivity]{The logarithmic plot shows how $ tol $, the tolerance on the difference between the two approximations of the solution, that are numerical solution and initial guess, is of second order respect to $ \frac{1}{N} $. Instead, the error, that is the norm of the difference between exact and numerical solution, $|| u -u _{ex}||_{\infty}$, is of order one.}
 	\label{time_order}
+\end{figure}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1\linewidth]{ta_vs_ei}
+	\caption[Comparizon of time steps' number needed by Eulero backward and time adaptivity]{Order of convergence is one in both Eulero backward and time adaptivity methods, but, in the second case, the error $ ||u - u_{ex}|| $ is proportional to $ \frac{1}{N} $ with a smaller constant, that means less iterations can be done for achieve the same accuracy. In particular, in this case, they are circa $ 18\% $. }
+	\label{num_spets}
 \end{figure}
 \section{Space discretization}
 The mesh that we decided to use has the quadtrees' numeration for the nodes (see \cite{p4est}). Before going in more details, we will discuss about some difficulties that we have encountered. \\
