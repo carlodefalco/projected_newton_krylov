@@ -6,9 +6,9 @@ The main aim of our work is to propose a strategy to solve coupled nonlinear par
 	\item space discretization,
 	\item nonlinear method,
 \end{itemize}  
-where each point will be addressed in the next two chapters. \\
+where each point will be addressed in the next chapters. \\
 There are many examples of problems with the features that we nominated, for example Turing systems, generally nonlinear, with variables that represent chemical concentration of two species, therefor constrained to be nonnegative. \\
-The example problem that we chose is taken from article "On interfaces between cell populations with different mobilities" \cite{tumor_growth}, because we know from previous studies on it, that it can be complicated enough to be a suitable test problem for validity and performances of our strategy.
+The example problem we chose is taken from article "On interfaces between cell populations with different mobilities" \cite{tumor_growth}, because we know from previous studies on it, that it can be complicated enough to be a suitable test problem for validity and performances of our strategy.
 Let see how it is structured. 
 \section{Tumor growth}
 \subsection {Introduction to the model}
@@ -26,12 +26,12 @@ Variable $ m $ indicates local density of \textit{dividing cells}, therefore tho
 p := K_\gamma (n+m)^\gamma,
 \end{equation}
 with $ K_\gamma = \frac{\gamma + 1}{\gamma} $, where $ \gamma $ is a positive parameter that controls the stiffness of pressure law. Coefficients $ \mu > 0$ and $ \nu > 0 $ stand for mobility of dividing and non-dividing cells  respectively.\\
-Second term of the left-hand-side model is a recall of the Dracy's law since is suggest the tendency of cells to move down the pressure gradient.\\
-Right-hand-side of first equation indicates reasonably that growth of division cells $ m $ is proportional to its own density trough the quantity $ G(p) $. All this model is based on the observation that proliferating cells, $ m $, exert a pressure on their neighbours, $ n $,  and this result is a cell motion, that makes the first ones push forward the seconds. However, because of the competition fo space, when the pressure is above a threshold, that it is called \textit{homeostatic pressure} $ P_M $, then the system enters in a quiescent state. For all this reasons, it is required that $ G(P_M) = 0 $ and $ G'(p) < 0 $, because when pressure increases, so the competition of space, the devision rate has to decrease. \\
-As announced in \cite{tumor_growth}, two cases has to be distinguished. When the dividing cells are more viscous ($ \nu > \mu $), so characterized by less mobility, than non-dividing ones, is supposed to generate segregation, that is $ m $ and $ n $ separated through a sharp interface.
+Second term of the left-hand-side model is a recall of the Dracy's law since it suggests the tendency of cells to move down the pressure gradient.\\
+Right-hand-side of first equation indicates reasonably that growth of division cells $ m $ is proportional to its own density trough the quantity $ G(p) $. All this model is based on the observation that proliferating cells, $ m $, exert a pressure on their neighbours, $ n $,  and the result is a cell motion, that makes the first ones push forward the seconds. However, because of competition for space, when the pressure is above a threshold, that it is called \textit{homeostatic pressure} $ P_M $, then the system enters in a quiescent state. For all this reasons, it is required that $ G(P_M) = 0 $ and $ G'(p) < 0 $, because when pressure increases, so the competition for space, the devision rate has to decrease. \\
+As announced in \cite{tumor_growth}, two cases has to be distinguished. When the dividing cells are more viscous ($ \nu > \mu $), so characterized by less mobility, than non-dividing ones, it is supposed to generate segregation, that is $ m $ and $ n $ separated through a sharp interface.
 Second case is the opposite one, $ \mu > \nu $, that corresponds to the situation in which "more viscous fluid" expands in a "less viscous" one. This scenario is expected to generate instabilities.\\
 \subsection{One-dimensional traveling waves}
-Suppose that we are looking fro solution of the form $ m(x,t) = m (x - \sigma  t) $ and $n(x,t) = n (x - \sigma  t)$, with $ \sigma $ traveling wave's velocity. Let start with an initial condition in which $ m $ and $ n $ lie on supports and are strictly separated, that is : $ Supp (m) = (-\infty, 0] $ and $ Supp (n) =  [0,r] $, with $ r = 1 $.\\
+Suppose that we are looking for solution of the form $ m(x,t) = m (x - \sigma  t) $ and $n(x,t) = n (x - \sigma  t)$, with $ \sigma $ traveling wave's velocity. Let start with an initial condition in which $ m $ and $ n $ lie on supports and are strictly separated, that is : $ Supp (m) = (-\infty, 0] $ and $ Supp (n) =  [0,r] $, with $ r = 1 $.\\
  Then \eqref{tumor_system} becomes:
 \begin{equation}
 \label{tumor_system_1d}
@@ -69,11 +69,11 @@ We look for a solution of the following form:
 p_m(\xi) = P_0(\xi) + \epsilon  P_1 (\xi),
 \end{equation}
 with $ p(-\infty) = P_M $.\\
-Now, if we integrate \eqref{sum_eq}, it becomes : $ -\sigma (m + n) (x) - ((\mu m + \nu n) p')(x) = \int^{1}_{x} mG(p)$. By the continuity of $ m $, $ n $ and, consequently, of $ p $, and \eqref{pn}, this expression is obtained:
+Now, if we integrate \eqref{sum_eq}, it comes out : $ -\sigma (m + n) (x) - ((\mu m + \nu n) p')(x) = \int^{1}_{x} mG(p)$. By the continuity of $ m $, $ n $ and, consequently, of $ p $, and \eqref{pn}, this expression is obtained:
 \begin{equation*}
 p'(0^-) = \frac{\nu}{\mu} p'(0^+)=-\frac{\sigma}{\mu}.
 \end{equation*} 
-This is used as boundary condition for \eqref{pm}, then, if we neglect the part multiplied by $ \epsilon $, we obtain :
+This is used as boundary conditions for \eqref{pm}, then, if we neglect the part multiplied by $ \epsilon $, we obtain :
 \begin{eqnarray}
 \label{solpm}
 p_m(\xi) = P_M + (\frac{\sigma}{\nu} - P_M) \exp \Big({\frac{\xi}{\sqrt{\mu}}}\Big), \; \; \; \text{with} \; \; \;

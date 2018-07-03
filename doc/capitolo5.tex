@@ -118,7 +118,7 @@ Nodes in all quadrants are numerated with this order and also the sequence of qu
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.7\linewidth]{mesh5x5}
-	\caption[Sequence of quadrants taken in quadtrees numetation for a mesh $ 5\times 5 $]{Sequence of quadrants taken to numerated}
+	\caption[Sequence of quadrants taken with quadtrees numetation for a mesh $ 5\times 5 $]{Sequence of quadrants taken to be numerated}
 	\label{mesh5x5}
 \end{figure}
 
@@ -140,7 +140,8 @@ Figure \ref{patterndivision} shows how the patter of the global matrix is divide
 	\label{patterndivision}
 \end{figure}
 The point of this introduction of quadtrees mesh, actually, is to show that the natural separation among processors of the mesh's regions, so of A, is not divided by rows, and there are even overlaps for same elements. Having said that, we already know that LIS wants matrix $ A $ to be strictly separated by rows, so our next aim was to create a new version of the already existing class in BIM of sparse matrices called \texttt{sparse\_matrix}, that handles this problem.
-\subsection{Sparse matrix distributed class}
+\subsection{Parallelization on the mesh}
+\subsubsection{Sparse matrix distributed class}
 In this section, we present the alternative of class \texttt{sparse\_matrix}, that was created to allow each processor to assemble its matrix as LIS solver requires. This class is called \texttt{distributed\_sparse\_matrix} and its main variables are the following. 
 \\
 \\
@@ -359,7 +360,7 @@ update = false;
 }
 \end{lstlisting}
 In nonlinear solving of partial differential equations problems, often, pattern of the matrix $ A $ remains the same for all the nonlinear and, eventually, time steps. This is why we actually separated the communications of the indexes from the one of the values; indeed, ones computed, \texttt{row\_buffers} and \texttt{col\_buffers} are supposed to remain the same, therefore there is no need to calculate them every time. Actually, the same is true also for the \texttt{non\_local} structure of $ A $. This is why we implemented also the method \texttt{non\_local\_csr\_value ()}, that updates only the values of \texttt{non\_local.a}. Regarding the buffers, communication of the values is essentially the same as before and, it is in lines 36-40, that the communicated values are inserted in matrix $ A $. At the end all the out-of-range values of $ A $ are set to zero.\\
-\subsection{Distributed vector class}
+\subsubsection{Distributed vector class}
 In our example of linear system $ Au = f $, we know that every rank has his own matrix $ A $ and that the sum of all of them represents the global matrix. Since $ (A_1 + A_2) (u_1 + u_2) \neq A_1 u_1 + A_2 u_2$, $ u $ has to have the global values, but it is enough to allocate the ones that correspond to owned and shared nodes, and not to all the nodes, since $ A $ has nonzero elements only for these nodes. On the other hand, $ f $ could have elements different from zero only where $ A $ has nonzero rows, that is in all owned and shared nodes. But, again, if we want to pass this vectors in LIS for parallel solving, we have to pass just the piece of the current range, and it means that all the out-of-range values has to bo communicated to their correspondent processors.
 For this regard, we implemented a new class called \texttt{distributed\_vector}. Let see how is structured.
 \begin{lstlisting}[language=C++, caption={distributed\_vector class}]
@@ -443,3 +444,20 @@ First of all, let have a look at the constructors. Suppose to have a distributed
 \end{enumerate}
 The two first steps are of the method \texttt{remap ()}, while the others are in \texttt{assemble ()}. Besides, steps 4, 5 and 6 were not present in the previous class. They are a kind of inverse communication, indeed after the update of \texttt{owned\_data}, this one is communicated to the others' \texttt{non\_local\_data}. In this way, we ensure that also \texttt{non\_local\_data} will be updated with the global values. This needs to happen because, as we said before, $ u $ has to have the global values also out-of-the range.\\
 The use of objects of this class is quite easy since is sufficient to write \texttt{u[i] = val} and, if  \texttt{i} belong to the current range, then it is equivalent to write \texttt{owned\_data[i] = val}, otherwise it is inserted a new component \texttt{<i, val>} in the map \texttt{non\_local\_data}, or it is updated, if one exists already with this index. It is enough to initialize all the elements out-of-range that we are interested to keep inside $ u $, and then they will be always updated with \texttt{assemble ()}. In our case, they will be the shared nodes.\\
+\subsection{Ordering of more fields on the same mesh}
+Now we have to specify how the presence of two fields, as it is in our test problem \eqref{tumor_system} in Chapter 1, can be handled with the parallelization. \\
+In our computational environment we keep the fields, $ m $ and $ n $, in the same container, that in this case will have twice the mesh size. The same is true for all the other vectors, like the initial guess or the right-hand-side of the system.\\
+Consequently we can imagine a partition as the one in Figure \ref{A_m_n}, with $ N $ number of nodes. This can be useful when we, for example, implement the matrix; indeed, generally, the four blocks are done separately. But since our parallelization is based on the mesh's quadrants, we decided to weave the two fields $ m $ and $ n $, which means that vectors will be ordered by nodes. Starting from the first node, all the variables evaluated in it are listed before passing to the second node and so on. Figure \ref{weave} shows the idea of this ordering, of course all the structure of $ A $ will be different from the one in Figure \ref{A_m_n}, but we can still treated $ A $ as separated in 4 blocks, even if it is not, using variables of type \texttt{ordering} that pick the cells of the matrix that belongs to one of the blocks.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\linewidth]{A_m_n}
+	\caption[Partition of matrix and vectors among $ m $ and $ n $]{Partition of matrix and vectors among $ m $ and $ n $, with $ N $ the number of nodes. This is a intuitive division, but is not going to be the chosen one because we want to order by nodes and not by fields. Nevertheless this is a useful way to imagine it; indeed when we compute the matrix, we will do it with each block separately. For working with the matrix as it is structure in this way, even if it is no, we implemented variables of type \texttt{ordering} that do this job. }
+	\label{A_m_n}
+\end{figure}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\linewidth]{weave}
+	\caption[Chain of different fields]{This illustrates how the two field, $ m $ and $ n $, are weaved node after node in order to preserve the division by quadrants in parallel computing.}
+	\label{weave}
+\end{figure}
+ 
