@@ -91,7 +91,7 @@ What we conclude from it, is that if we want to have ad accuracy of $ 0.01 $, th
 \end{figure}
 \section{Space discretization}
 The mesh that we decided to use has the quadtrees' numeration for the nodes (see \cite{p4est}). Before going in more details, we will discuss about some difficulties that we have encountered. \\
-In view of the fact that we have to solve nonlinear systems, we used the C++ library LIS (Library of Iterative Solvers for linear systems), that, as the name suggests, solves liner problems with iterative methods. Since we needed to implement parallel solving to make the computing time reasonable, we created an interface for LIS, \texttt{lis\_distributed\_class}, in the library that we used for our implementations, called BIM, that manage a "decentralized" parallelization. This means that if we consider a linear system $ A u = f $, each processor will have  only his piece of $ A $, $ u $ and $ f $. In particular LIS requires matrix $ A $ to be divided in strictly separated ranges of rows. Also vectors $ u $ and $ f $ have to be divided among processors with the same ranges. The point is that the numeration that we have chosen for the mesh, does not divide matrix and vectors as LIS requires in a parallel environment. \\
+In view of the fact that we have to solve nonlinear systems, we used the C++ library LIS (Library of Iterative Solvers for linear systems), that, as the name suggests, solves liner problems with iterative methods. Since we needed to implement parallel solving to make the computing time reasonable, we created an interface for LIS, \texttt{lis\_distributed\_class}, in the library that we used for our implementations, called BIM, that manage a "decentralized" parallelization. This means that if we consider a linear system $ A u = f $, each processor will have  only its piece of $ A $, $ u $ and $ f $. In particular LIS requires matrix $ A $ to be divided in strictly separated ranges of rows. Also vectors $ u $ and $ f $ have to be divided among processors with the same ranges. The point is that the numeration that we have chosen for the mesh, does not divide matrix and vectors as LIS requires in a parallel environment. \\
 Let see what happens and how we handled with it.
 \subsection{Numeration of quadtrees meshes}
 As we said above, solver LIS requires to have the matrix $ A $ divided by rows whenever it is asked parallel solving. For example, if we have a matrix with dimension $ 25 \times 25 $ and we want to parallelize it with 2 processors, then the first processor will have the first 15 rows, while the second one the others 10. \\
@@ -118,7 +118,7 @@ Nodes in all quadrants are numerated with this order and also the sequence of qu
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.7\linewidth]{mesh5x5}
-	\caption[Sequence of quadrants taken with quadtrees numetation for a mesh $ 5\times 5 $]{Sequence of quadrants taken to be numerated}
+	\caption[Sequence of quadrants taken with quadtrees numetation for a mesh $ 5\times 5 $]{Sequence of quadrants taken to be numerated in a quadtrees mesh}
 	\label{mesh5x5}
 \end{figure}
 
@@ -126,7 +126,7 @@ Nodes in all quadrants are numerated with this order and also the sequence of qu
 	
 	\centering
 	\includegraphics[width=0.7\linewidth]{nodimesh5x5}
-	\caption[Quadtrees numeration of nodes for a mesh $ 5 \times 5 $]{Quadtrees numeration of a $ 5 \times 5 $ mesh}
+	\caption[Quadtrees numeration of nodes for a mesh $ 5 \times 5 $]{Quadtrees numeration of a $ 5 \times 5 $ mesh. With two processors, the first 8 quadrants will go to processor 1, while the others 8 to processor 2. Nodes on the border (6,7,8,13,14) are called "shared" or "non local" and belong to the first processor that touches them, that is processor 1.}
 	\label{nodimesh5x5}
 \end{figure}
 With a mesh of this dimension, in discrete approximation all the space variables, will turn into  vectors of $ 5^2 = 25 $ components. Therefore the linear system that we have to solve has the shape $ A u = f $, with $ A \in \mathbb{R}^{25} \times \mathbb{R}^{25} $ and  $ u,f \in \mathbb{R}^{25} $. Since our system is coming from advection-diffusion-reaction equations, the most general pattern that matrix $ A $ can have is the one implemented by the method  called \texttt{bim2a\_structure (tmsh, A)} of class \texttt{sparse\_matrix}. This pattern is supposed to compare each node with all its four neighbours, because the problem has diffusion term and, indeed $ A $ has to contain also the discrete gradient of the variable $ u $. For example, in row 6, the previous method will allocate memory in $ A $, in column 6, 2, 7 and 15.\\
@@ -151,70 +151,70 @@ distributed_sparse_matrix
 : public sparse_matrix
 {
 private :
-void
-non_local_csr_index ();
-void
-non_local_csr_value ();
-size_t is, ie;
-MPI_Comm comm;
-int mpirank, mpisize;
-int nnz_owned;
-struct
-non_local_t
-{
-std::vector<int> prc_ptr, row_ind, col_ind;
-std::vector<double> a;
-} non_local;
-std::map<int, std::vector<int>> row_buffers;
-std::map<int, std::vector<int>> col_buffers;
-std::map<int, std::vector<double>> val_buffers;
-std::vector<int> ranges;
-std::vector<int> rank_nnz;
+  void
+  non_local_csr_index ();
+  void
+  non_local_csr_value ();
+  size_t is, ie;
+  MPI_Comm comm;
+  int mpirank, mpisize;
+  int nnz_owned;
+  struct
+  non_local_t
+  {
+	std::vector<int> prc_ptr, row_ind, col_ind;
+	std::vector<double> a;
+  } non_local;
+  std::map<int, std::vector<int>> row_buffers;
+  std::map<int, std::vector<int>> col_buffers;
+  std::map<int, std::vector<double>> val_buffers;
+  std::vector<int> ranges;
+  std::vector<int> rank_nnz;
 public :
-void
-set_ranges (size_t is_, size_t ie_, MPI_Comm comm_ =     
-MPI_COMM_WORLD);
-distributed_sparse_matrix (size_t is_, size_t ie_,
-MPI_Comm comm_= MPI_COMM_WORLD)
-: mapped (false)
-{ set_ranges (is_, ie_, comm_); }
-distributed_sparse_matrix (MPI_Comm comm_ = MPI_COMM_WORLD)
-: comm (comm_), mapped (false)
-{ }
+  void
+  set_ranges (size_t is_, size_t ie_, MPI_Comm comm_ =     
+              MPI_COMM_WORLD);
+  distributed_sparse_matrix (size_t is_, size_t ie_,
+                             MPI_Comm comm_= MPI_COMM_WORLD)
+   : mapped (false)
+   { set_ranges (is_, ie_, comm_); }
+  distributed_sparse_matrix (MPI_Comm comm_ = MPI_COMM_WORLD)
+   : comm (comm_), mapped (false)
+   { }
 \end{lstlisting}
 
 Let $ A $ be a matrix of type \texttt{distributed\_sparse\_matrix}. First of all, we have to set variables \texttt{is} and \texttt{ie}, which indicate the first and the last row owned by the current rank. These are computed in \texttt{lis\_distributed\_class} and passed to $ A $ by a method in the following way: \texttt{A.set\_ranges (is, ie)}. This sets also the components of \texttt{ranges}, that is the rows' ranges in which the global matrix is divided among the processors.\\
-In lines 15-19 it is defined the structure \texttt{non\_local} that has \texttt{prc\_ptr}, a vector supposed to contain the numbers of nonzero elements that local A has in each range. Differently from vector \texttt{ranges}, \texttt{prc\_ptr}, like all the others, changes from rank to rank; indeed each rank has a different $ A $. So this is a way to indicate how many elements and to who the current rank has to communicate. The other vectors in \texttt{non\_local} are basically the indexes and values in AIJ format of the elements of A out of the range of current rank. All of them are computed by \texttt{non\_local\_csr\_index}. 
+In lines 15-19 it is defined the structure \texttt{non\_local} that has \texttt{prc\_ptr}, a vector supposed to contain the numbers of nonzero elements that local A has in each range, different from the one owned by the current processor. Vector \texttt{prc\_ptr}, like all the others in \texttt{non\_local}, changes from rank to rank; indeed each rank has a different $ A $. So this is a way to indicate how many elements and to who the current rank has to communicate. The other vectors in \texttt{non\_local} are basically the indexes and values in AIJ format of the elements of A out of the range of current rank. All of them are computed by \texttt{non\_local\_csr\_index}. 
 \begin{lstlisting}[language=C++, caption={distributed\_sparse\_matrix::non\_local\_csr\_index ()}]
 void
 distributed_sparse_matrix::non_local_csr_index ()
 {
-non_local.row_ind.clear ();
-non_local.col_ind.clear ();
-non_local.a.clear ();
-this->set_properties ();
-non_local.prc_ptr.assign (this->mpisize + 1, 0);
-sparse_matrix::col_iterator jj;
-for (size_t ii = 0; ii < this->mpisize; ++ii)
-{
-non_local.prc_ptr[ii+1] = non_local.prc_ptr[ii];
-if (ii != mpirank)
-for (size_t kk = ranges[ii]; kk < ranges[ii+1]; ++kk)
-{
-non_local.prc_ptr[ii+1] += (*this)[kk].size ();
-non_local.col_ind.reserve ((*this)[kk].size ());
-non_local.row_ind.reserve ((*this)[kk].size ());
-for (jj  = (*this)[kk].begin ();
-jj != (*this)[kk].end (); ++jj)
-{
-non_local.row_ind.push_back (kk);
-non_local.col_ind.push_back 
-(this->col_idx (jj));
-non_local.a.push_back (this->col_val (jj));
-}
-}
-}
-non_local.a.resize (non_local.row_ind.size ());
+  non_local.row_ind.clear ();
+  non_local.col_ind.clear ();
+  non_local.a.clear ();
+  this->set_properties ();
+  non_local.prc_ptr.assign (this->mpisize + 1, 0);
+  sparse_matrix::col_iterator jj;
+  for (size_t ii = 0; ii < this->mpisize; ++ii)
+    {
+      non_local.prc_ptr[ii+1] = non_local.prc_ptr[ii];
+	  if (ii != mpirank)
+	    for (size_t kk = ranges[ii]; kk < ranges[ii+1]; ++kk)
+		  {
+			non_local.prc_ptr[ii+1] += (*this)[kk].size ();
+			non_local.col_ind.reserve ((*this)[kk].size ());
+			non_local.row_ind.reserve ((*this)[kk].size ());
+			for (jj  = (*this)[kk].begin ();
+			  jj != (*this)[kk].end (); ++jj)
+		        {
+				  non_local.row_ind.push_back (kk);
+				  non_local.col_ind.push_back 
+				  (this->col_idx (jj));
+				  non_local.a.push_back (this->col_val (jj));
+				}
+		  }
+    }
+  non_local.a.resize (non_local.row_ind.size ());
 }
 \end{lstlisting}
 As we see, \texttt{prc\_ptr} is, actually, the cumulative sum of the number of nonzero elements in the others ranges. We also see that with the check in line 13, only out-of-range elements are considered.\\
@@ -223,217 +223,217 @@ Up to now, for each $ A $ implemented by different ranks, we can identify which 
 void
 distributed_sparse_matrix::remap ()
 {
-non_local_csr_index ();
-/// Distribute buffer sizes
-rank_nnz.assign (mpisize, 0);
-for (int ii = 0; ii < mpisize; ++ii)
-rank_nnz[ii] = non_local.prc_ptr[ii+1] 
-- non_local.prc_ptr[ii];
-MPI_Alltoall (MPI_IN_PLACE, 1, MPI_INT, &(rank_nnz[0]), 1,
-MPI_INT, comm);
-/// Allocate buffers
-for (int ii = 0; ii < mpisize; ++ii)
-if ((rank_nnz[ii] > 0) && (ii != mpirank))
-{
-row_buffers[ii].resize (rank_nnz[ii]);
-col_buffers[ii].resize (rank_nnz[ii]);
-val_buffers[ii].resize (rank_nnz[ii]);
-}
-/// Communicate overlap regions
-/// 1) communicate row_ptr
-std::vector<MPI_Request> reqs;
-for (int ii = 0; ii < mpisize; ++ii)
-{
-if (ii == mpirank) continue; // No communication to self!
-if (rank_nnz[ii] > 0) // we must receive 
-//something from rank ii
-{
-int recv_tag = ii   + mpisize * mpirank;
-reqs.resize (reqs.size () + 1);
-MPI_Irecv (&(row_buffers[ii][0]), row_buffers[ii].size (),
-MPI_INT, ii, recv_tag, comm, &(reqs.back ()));
-}
-int rank_nnz_snd_ii = non_local.prc_ptr[ii+1] -
-non_local.prc_ptr[ii];
-if (rank_nnz_snd_ii > 0) // we must send something to rank ii
-{
-int send_tag = mpirank + mpisize * ii;
-reqs.resize (reqs.size () + 1);
-MPI_Isend (&(non_local.row_ind[non_local.prc_ptr[ii]]),
-rank_nnz_snd_ii, MPI_INT, ii, send_tag, comm,
-&(reqs.back ()));
-}     
-}
-MPI_Waitall (reqs.size (), &(reqs[0]), MPI_STATUSES_IGNORE);
-reqs.clear ();
-/// 2) communicate col_ind
-for (int ii = 0; ii < mpisize; ++ii)
-{
-if (ii == mpirank) continue; // No communication to self!
-if (rank_nnz[ii] > 0) // we must receive 
-// something from rank ii
-{
-int recv_tag = ii   + mpisize * mpirank;
-reqs.resize (reqs.size () + 1);
-MPI_Irecv (&(col_buffers[ii][0]), col_buffers[ii].size (),
-MPI_INT, ii, recv_tag, comm, &(reqs.back ()));
-}
-int rank_nnz_snd_ii = non_local.prc_ptr[ii+1] -
-non_local.prc_ptr[ii];
-if (rank_nnz_snd_ii > 0) // we must send 
-// something to rank ii
-{
-int send_tag = mpirank + mpisize * ii;
-reqs.resize (reqs.size () + 1);
-MPI_Isend (&(non_local.col_ind[non_local.prc_ptr[ii]]),
-rank_nnz_snd_ii, MPI_INT, ii, send_tag, comm,
-&(reqs.back ()));
-}     
-}
-MPI_Waitall (reqs.size (), &(reqs[0]), MPI_STATUSES_IGNORE);
-reqs.clear ();
-mapped = true;
-update = true;
+  non_local_csr_index ();
+  /// Distribute buffer sizes
+  rank_nnz.assign (mpisize, 0);
+  for (int ii = 0; ii < mpisize; ++ii)
+  rank_nnz[ii] = non_local.prc_ptr[ii+1] 
+                - non_local.prc_ptr[ii];
+  MPI_Alltoall (MPI_IN_PLACE, 1, MPI_INT, &(rank_nnz[0]), 1,
+  MPI_INT, comm);
+  /// Allocate buffers
+  for (int ii = 0; ii < mpisize; ++ii)
+    if ((rank_nnz[ii] > 0) && (ii != mpirank))
+	  {
+		row_buffers[ii].resize (rank_nnz[ii]);
+		col_buffers[ii].resize (rank_nnz[ii]);
+		val_buffers[ii].resize (rank_nnz[ii]);
+	  }
+  /// Communicate overlap regions
+  /// 1) communicate row_ptr
+  std::vector<MPI_Request> reqs;
+  for (int ii = 0; ii < mpisize; ++ii)
+	{
+	  if (ii == mpirank) continue; // No communication to self!
+      if (rank_nnz[ii] > 0) // we must receive 
+                           //something from rank ii
+        {
+		  int recv_tag = ii   + mpisize * mpirank;
+          reqs.resize (reqs.size () + 1);
+		  MPI_Irecv (&(row_buffers[ii][0]), row_buffers[ii].size (),
+                     MPI_INT, ii, recv_tag, comm, &(reqs.back ()));
+        }
+      int rank_nnz_snd_ii = non_local.prc_ptr[ii+1] -
+      non_local.prc_ptr[ii];
+      if (rank_nnz_snd_ii > 0) // we must send something to rank ii
+        {
+		  int send_tag = mpirank + mpisize * ii;
+          reqs.resize (reqs.size () + 1);
+		  MPI_Isend (&(non_local.row_ind[non_local.prc_ptr[ii]]),
+					rank_nnz_snd_ii, MPI_INT, ii, send_tag, comm,
+					&(reqs.back ()));
+		}     
+	}
+  MPI_Waitall (reqs.size (), &(reqs[0]), MPI_STATUSES_IGNORE);
+               reqs.clear ();
+  /// 2) communicate col_ind
+  for (int ii = 0; ii < mpisize; ++ii)
+    {
+	  if (ii == mpirank) continue; // No communication to self!
+	  if (rank_nnz[ii] > 0) // we must receive 
+      // something from rank ii
+        {
+		  int recv_tag = ii   + mpisize * mpirank;
+		  reqs.resize (reqs.size () + 1);
+		  MPI_Irecv (&(col_buffers[ii][0]), col_buffers[ii].size (),
+					MPI_INT, ii, recv_tag, comm, &(reqs.back ()));
+		}
+      int rank_nnz_snd_ii = non_local.prc_ptr[ii+1] -
+      non_local.prc_ptr[ii];
+	  if (rank_nnz_snd_ii > 0) // we must send 
+	  // something to rank ii
+	    {
+		  int send_tag = mpirank + mpisize * ii;
+          reqs.resize (reqs.size () + 1);
+		  MPI_Isend (&(non_local.col_ind[non_local.prc_ptr[ii]]),
+					rank_nnz_snd_ii, MPI_INT, ii, send_tag, comm,
+					&(reqs.back ()));
+        }     
+	}
+  MPI_Waitall (reqs.size (), &(reqs[0]), MPI_STATUSES_IGNORE);
+  reqs.clear ();
+  mapped = true;
+  update = true;
 }
 \end{lstlisting}
 Here we encounter \texttt{row\_buffers}, \texttt{col\_buffers} and \texttt{val\_buffers} that basically are containers of the elements that the current rank receives from the others. The numbers of these elements are set in the vector \texttt{rank\_nnz} with \texttt{MPI\_Alltoall} (lines 7-12). With this numbers, we set buffers' sizes . \\
-Now comes the crucial part, in which each rank sends the indexes of its non local elements and receives the others' non local elements that are in its range. With line 25, communication to itself is avoided and the procedure of sending and receiving is done only if actually there is some thing to send or receive. Therefore, essentially, \texttt{distributed\_sparse\_matrix::remap ()} set the indexes of the cells in $ A $ in which each processor has to receive a value. For the communication of these values, we made the next method.
+Now comes the crucial part, in which each rank sends the indexes of its non local elements and receives the others' non local elements that are in its range. With line 25, communication to itself is avoided and the procedure of sending and receiving is done only if actually there is something to send or receive. Therefore, essentially, \texttt{distributed\_sparse\_matrix::remap ()} set the indexes of the cells in $ A $ in which each processor has to receive a value. For the communication of these values, we made the next method.
 \begin{lstlisting}[language=C++, caption={distributed\_sparse\_matrix::assemble ()}]
 void
 distributed_sparse_matrix::assemble ()
 {
-if (! mapped)
-remap ();
-non_local_csr_value ();
-/// 3) communicate values
-std::vector<MPI_Request> reqs;
-for (int ii = 0; ii < mpisize; ++ii)
-{
-if (ii == mpirank) continue; // No communication to self!
-if (rank_nnz[ii] > 0) // we must receive something 
-// from rank ii
-{
-int recv_tag = ii   + mpisize * mpirank;
-reqs.resize (reqs.size () + 1);
-MPI_Irecv (&(val_buffers[ii][0]), val_buffers[ii].size (),
-MPI_DOUBLE, ii, recv_tag, comm, &(reqs.back
-()));
-}
-int rank_nnz_snd_ii = non_local.prc_ptr[ii+1] -
-non_local.prc_ptr[ii];      
-if (rank_nnz_snd_ii > 0) // we must send something 
-// to rank ii
-{
-int send_tag = mpirank + mpisize * ii;
-reqs.resize (reqs.size () + 1);
-MPI_Isend (&(non_local.a[non_local.prc_ptr[ii]]),
-rank_nnz_snd_ii, MPI_DOUBLE, ii, send_tag,
-comm, &(reqs.back ()));
-}     
-}
-MPI_Waitall (reqs.size (), &(reqs[0]), MPI_STATUSES_IGNORE);
-reqs.clear ();
-/// 4) insert communicated values into sparse_matrix
-for (int ii = 0; ii < mpisize; ++ii) // loop over ranks
-if (ii != mpirank)
-for (int kk = 0; kk < rank_nnz[ii]; ++kk)  
-(*this)[row_buffers[ii][kk]][col_buffers[ii][kk]]
-+= val_buffers[ii][kk];
-/// 5) zero out communicated values  
-for (int iprc = 0; iprc < mpisize; ++iprc)
-if (iprc != mpirank)
-{
-for (int ii = non_local.prc_ptr[iprc];
-ii < non_local.prc_ptr[iprc+1]; ++ii)
-// the following will throw if we try to access
-// an element which does not exist yet!
-(*this)[non_local.row_ind[ii]].at (non_local.col_ind[ii])
-= 0.0;
-}
-if (update)
-{
-nnz_owned = 0;
-for (int irow = is; irow < ie; ++irow)
-nnz_owned += (*this)[irow].size ();
-}
-update = false;
+  if (! mapped)
+    remap ();
+  non_local_csr_value ();
+  /// 3) communicate values
+  std::vector<MPI_Request> reqs;
+  for (int ii = 0; ii < mpisize; ++ii)
+	{
+	  if (ii == mpirank) continue; // No communication to self!
+	  if (rank_nnz[ii] > 0) // we must receive something 
+	  // from rank ii
+	    {
+          int recv_tag = ii   + mpisize * mpirank;
+          reqs.resize (reqs.size () + 1);
+		  MPI_Irecv (&(val_buffers[ii][0]), val_buffers[ii].size (),
+                     MPI_DOUBLE, ii, recv_tag, comm, &(reqs.back
+                     ()));
+        }
+    int rank_nnz_snd_ii = non_local.prc_ptr[ii+1] -
+    non_local.prc_ptr[ii];      
+    if (rank_nnz_snd_ii > 0) // we must send something 
+    // to rank ii
+      {
+	    int send_tag = mpirank + mpisize * ii;
+	    reqs.resize (reqs.size () + 1);
+	    MPI_Isend (&(non_local.a[non_local.prc_ptr[ii]]),
+		    	  rank_nnz_snd_ii, MPI_DOUBLE, ii, send_tag,
+				  comm, &(reqs.back ()));
+      }     
+    }
+  MPI_Waitall (reqs.size (), &(reqs[0]), MPI_STATUSES_IGNORE);
+              reqs.clear ();
+  /// 4) insert communicated values into sparse_matrix
+  for (int ii = 0; ii < mpisize; ++ii) // loop over ranks
+    if (ii != mpirank)
+      for (int kk = 0; kk < rank_nnz[ii]; ++kk)  
+        (*this)[row_buffers[ii][kk]][col_buffers[ii][kk]]
+                                   += val_buffers[ii][kk];
+  /// 5) zero out communicated values  
+  for (int iprc = 0; iprc < mpisize; ++iprc)
+    if (iprc != mpirank)
+	  {
+		for (int ii = non_local.prc_ptr[iprc];
+		     ii < non_local.prc_ptr[iprc+1]; ++ii)
+		  // the following will throw if we try to access
+		  // an element which does not exist yet!
+		  (*this)[non_local.row_ind[ii]].at (non_local.col_ind[ii])
+                                                             = 0.0;
+      }
+  if (update)
+    {
+      nnz_owned = 0;
+	  for (int irow = is; irow < ie; ++irow)
+	    nnz_owned += (*this)[irow].size ();
+	}
+  update = false;
 }
 \end{lstlisting}
 In nonlinear solving of partial differential equations problems, often, pattern of the matrix $ A $ remains the same for all the nonlinear and, eventually, time steps. This is why we actually separated the communications of the indexes from the one of the values; indeed, ones computed, \texttt{row\_buffers} and \texttt{col\_buffers} are supposed to remain the same, therefore there is no need to calculate them every time. Actually, the same is true also for the \texttt{non\_local} structure of $ A $. This is why we implemented also the method \texttt{non\_local\_csr\_value ()}, that updates only the values of \texttt{non\_local.a}. Regarding the buffers, communication of the values is essentially the same as before and, it is in lines 36-40, that the communicated values are inserted in matrix $ A $. At the end all the out-of-range values of $ A $ are set to zero.\\
 \subsubsection{Distributed vector class}
-In our example of linear system $ Au = f $, we know that every rank has his own matrix $ A $ and that the sum of all of them represents the global matrix. Since $ (A_1 + A_2) (u_1 + u_2) \neq A_1 u_1 + A_2 u_2$, $ u $ has to have the global values, but it is enough to allocate the ones that correspond to owned and shared nodes, and not to all the nodes, since $ A $ has nonzero elements only for these nodes. On the other hand, $ f $ could have elements different from zero only where $ A $ has nonzero rows, that is in all owned and shared nodes. But, again, if we want to pass this vectors in LIS for parallel solving, we have to pass just the piece of the current range, and it means that all the out-of-range values has to bo communicated to their correspondent processors.
+In our example of linear system $ Au = f $, we know that every rank has his own matrix $ A $ and that the sum of all of them represents the global matrix. Since $ (A_1 + A_2) (u_1 + u_2) \neq A_1 u_1 + A_2 u_2$, each rank has to have the global values of $ u $, but it is enough to allocate the ones that correspond to owned and shared nodes, and not to all the nodes, since $ A $ has nonzero elements only for these nodes. On the other hand, $ f $ could have elements different from zero only where $ A $ has nonzero rows, that is in all owned and shared nodes. But, again, if we want to pass this vectors in LIS for parallel solving, we have to pass just the piece of the current range, and it means that all the out-of-range values has to bo communicated to their correspondent processors.
 For this regard, we implemented a new class called \texttt{distributed\_vector}. Let see how is structured.
 \begin{lstlisting}[language=C++, caption={distributed\_vector class}]
 class
 distributed_vector
 {
 private:
-MPI_Comm comm;
-int mpirank;
-int mpisize;
-bool mapped;
-int owned_count;
-int is, ie;
-/// vector entries owned by the current node
-std::vector<double> owned_data;
-/// vector entries touched by the current node
-/// that belong somwhere else
-std::map<int, double> non_local_data;
-/// Structure to hold data of ghost entries
-/// in a format amenable for send/receive
-struct
-ghosts_t
-{
-std::vector<int> prc_ptr, row_ind, rank_nnz;
-std::vector<double> a;
-} ghosts;
-/// Copy data from non_local_data to ghosts
-void
-ghost_csr ();
-/// Update ghosts.
-void
-ghost_csr_update ();
-/// Structure to hold data of ghost entries
-/// in a format amenable for send/receive
-struct
-mirrors_t
-{
-std::vector<int> prc_ptr, row_ind, rank_nnz;
-std::vector<double> a;
-} mirrors;
-/// the entries that are owned by rank i
-/// are numbered between ranges[i]
-/// and ranges[i+1]
-std::vector<int> ranges;
-/// check whether the idx-th global
-/// entry is owned by the current rank
-inline bool
-is_owned (int idx) const
-{ return idx >= is && idx < ie; }
-/// check whether the idx-th global
-/// entry is owned by the given rank
-inline bool
-is_owned (int idx, int irank) const
-{ return idx >= ranges[irank] && idx < ranges[irank+1]; }
-/// return the rank that owns the idx-th entry
-inline int
-owner (int idx)
-{
-auto ir = std::lower_bound (ranges.begin (), 
-ranges.end (), idx);
-return int ((ir - ranges.begin ()) - 1);
-}
+  MPI_Comm comm;
+  int mpirank;
+  int mpisize;
+  bool mapped;
+  int owned_count;
+  int is, ie;
+  /// vector entries owned by the current node
+  std::vector<double> owned_data;
+  /// vector entries touched by the current node
+  /// that belong somwhere else
+  std::map<int, double> non_local_data;
+  /// Structure to hold data of ghost entries
+  /// in a format amenable for send/receive
+  struct
+  ghosts_t
+    {
+	  std::vector<int> prc_ptr, row_ind, rank_nnz;
+      std::vector<double> a;
+    } ghosts;
+  /// Copy data from non_local_data to ghosts
+  void
+  ghost_csr ();
+  /// Update ghosts.
+  void
+  ghost_csr_update ();
+  /// Structure to hold data of ghost entries
+  /// in a format amenable for send/receive
+  struct
+  mirrors_t
+    {
+	  std::vector<int> prc_ptr, row_ind, rank_nnz;
+      std::vector<double> a;
+    } mirrors;
+  /// the entries that are owned by rank i
+  /// are numbered between ranges[i]
+  /// and ranges[i+1]
+  std::vector<int> ranges;
+  /// check whether the idx-th global
+  /// entry is owned by the current rank
+  inline bool
+  is_owned (int idx) const
+    { return idx >= is && idx < ie; }
+  /// check whether the idx-th global
+  /// entry is owned by the given rank
+  inline bool
+  is_owned (int idx, int irank) const
+    { return idx >= ranges[irank] && idx < ranges[irank+1]; }
+  /// return the rank that owns the idx-th entry
+  inline int
+  owner (int idx)
+    {
+      auto ir = std::lower_bound (ranges.begin (), 
+	                              ranges.end (), idx);
+	  return int ((ir - ranges.begin ()) - 1);
+    }
 public:
-distributed_vector (int owned_count_,
-MPI_Comm comm_ = MPI_COMM_WORLD);
-distributed_vector (int is_, int ie_,
-MPI_Comm comm_ = MPI_COMM_WORLD);
-distributed_vector () {};
-void
-set_owned_count (int owned_count_, MPI_Comm comm_ =  
-MPI_COMM_WORLD);
+  distributed_vector (int owned_count_,
+  MPI_Comm comm_ = MPI_COMM_WORLD);
+  distributed_vector (int is_, int ie_,
+  MPI_Comm comm_ = MPI_COMM_WORLD);
+  distributed_vector () {};
+  void
+  set_owned_count (int owned_count_, MPI_Comm comm_ =  
+                   MPI_COMM_WORLD);
 \end{lstlisting}
-First of all, let have a look at the constructors. Suppose to have a distributed vector $ u $, when we declare it, we have also to provide either the dimension or the extremes of the owned nodes' range. If it is not possible, because, for example we are declaring this kind of vectors in a class that does not have this information internally, then we can declared it without anything, but when we want to use really that vector, we must implement first \texttt{u.set\_owned\_count (dimension\_range)}. This is because the first two constructors and that method set the size of \texttt{owned\_data}, which with \texttt{non\_local\_data}, is the main container of the class. Indeed, the first one is meant to contain values of the owned nodes, so the values that ere in the range of the current rank. The second will contain eventually the values and their indexes of out-of-range elements. Structures \texttt{ghosts} and \texttt{mirrors} has the same role as \texttt{non\_local} and \texttt{buffers} in \texttt{distributed\_sparse\_matrix}. The first one, that contains the non local elements, is computed  with private method \texttt{ghosts\_csr ()}, while the second one is computed after the communications done in methods called \texttt{remap ()} and \texttt{assemble ()}, analogue at the ones of the matrix's class, and contains the elements that are in the current range and are sent from the other ranks. All the mechanism of sending and receiving is very similar to the one shown in the previous section, so we will limit ourselves to recall the main steps. 
+First of all, let have a look at the constructors. Suppose to have a distributed vector $ u $, when we declare it, we have also to provide either the dimension or the extremes of the owned nodes' range. If it is not possible, because, for example we are declaring this kind of vectors in a class that does not have this information internally, then we can declared it without anything, but when we want to use that vector, we must implement first \texttt{u.set\_owned\_count (dimension\_range)}. This is because the first two constructors and that method set the size of \texttt{owned\_data}, which with \texttt{non\_local\_data}, is the main container of the class. Indeed, the first one is meant to contain values of the owned nodes, so the values that ere in the range of the current rank. The second will contain eventually the values and their indexes of out-of-range elements. Structures \texttt{ghosts} and \texttt{mirrors} has the same role as \texttt{non\_local} and \texttt{buffers} in \texttt{distributed\_sparse\_matrix}. The first one, that contains the non local elements, is computed  with private method \texttt{ghosts\_csr ()}, while the second one is computed after the communications done in methods called \texttt{remap ()} and \texttt{assemble ()}, analogue at the ones of the matrix's class, and contains the elements that are in the current range and are sent from the other ranks. All the mechanism of sending and receiving is very similar to the one shown in the previous section, so we will limit ourselves to recall the main steps. 
 \begin{enumerate}
 	\item  copy \texttt{non\_local\_data} into ghosts structure;
 	\item  send ghosts indexes and receive into mirrors;
@@ -443,15 +443,15 @@ First of all, let have a look at the constructors. Suppose to have a distributed
 	\item copy ghosts data into non\_local\_data.
 \end{enumerate}
 The two first steps are of the method \texttt{remap ()}, while the others are in \texttt{assemble ()}. Besides, steps 4, 5 and 6 were not present in the previous class. They are a kind of inverse communication, indeed after the update of \texttt{owned\_data}, this one is communicated to the others' \texttt{non\_local\_data}. In this way, we ensure that also \texttt{non\_local\_data} will be updated with the global values. This needs to happen because, as we said before, $ u $ has to have the global values also out-of-the range.\\
-The use of objects of this class is quite easy since is sufficient to write \texttt{u[i] = val} and, if  \texttt{i} belong to the current range, then it is equivalent to write \texttt{owned\_data[i] = val}, otherwise it is inserted a new component \texttt{<i, val>} in the map \texttt{non\_local\_data}, or it is updated, if one exists already with this index. It is enough to initialize all the elements out-of-range that we are interested to keep inside $ u $, and then they will be always updated with \texttt{assemble ()}. In our case, they will be the shared nodes.\\
+The use of objects of this class is quite easy since is sufficient to write \texttt{u[i] = val} and, if  \texttt{i} belong to the current range, then it is equivalent to write \texttt{owned\_data[i] = val}, otherwise it is inserted a new component \texttt{<i, val>} in the map \texttt{non\_local\_data}, or it is updated, if one exists already with this index. It is enough to initialize all the out-of-range elements, that we are interested to keep inside $ u $, at the beginning and then they will be always updated with \texttt{assemble ()}. In our case, they will be the shared nodes.\\
 \subsection{Ordering of more fields on the same mesh}
 Now we have to specify how the presence of two fields, as it is in our test problem \eqref{tumor_system} in Chapter 1, can be handled with the parallelization. \\
 In our computational environment we keep the fields, $ m $ and $ n $, in the same container, that in this case will have twice the mesh size. The same is true for all the other vectors, like the initial guess or the right-hand-side of the system.\\
-Consequently we can imagine a partition as the one in Figure \ref{A_m_n}, with $ N $ number of nodes. This can be useful when we, for example, implement the matrix; indeed, generally, the four blocks are done separately. But since our parallelization is based on the mesh's quadrants, we decided to weave the two fields $ m $ and $ n $, which means that vectors will be ordered by nodes. Starting from the first node, all the variables evaluated in it are listed before passing to the second node and so on. Figure \ref{weave} shows the idea of this ordering, of course all the structure of $ A $ will be different from the one in Figure \ref{A_m_n}, but we can still treated $ A $ as separated in 4 blocks, even if it is not, using variables of type \texttt{ordering} that pick the cells of the matrix that belongs to one of the blocks.
+Consequently we can imagine a partition as the one in Figure \ref{A_m_n}, with $ N $ number of nodes. This structure can be useful when we, for example, implement the matrix; indeed, generally, the four blocks $ A_{mm} $, $ A_{mn} $, $ A_{nm} $ and $ A_{nn} $ are done separately. But since our parallelization is based on the mesh's quadrants, we decided to weave the two fields $ m $ and $ n $, which means that vectors will be ordered by nodes. Starting from the first node, all the variables evaluated in it are listed before passing to the second node and so on. Figure \ref{weave} shows the idea of this ordering, of course all the structure of $ A $ will be different from the one in Figure \ref{A_m_n}, but we can still treated $ A $ as separated in 4 blocks, even if it is not, using variables of type \texttt{ordering}. Indeed each field will have its \texttt{ordering} variable, for example \texttt{ord0} for $ m $ and \texttt{ord1} for $ n $.  In practice these variables will contain the indexes in $ u $ of $ m $ and $ n $, which are \texttt{ord0 = \{0,2,4,...\}} and \texttt{ord1 = \{1,3,5,...\}}. Therefore, for example, computing \texttt{A(ord0, ord0)}, means to pick block $ A_{mm} $.
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.7\linewidth]{A_m_n}
-	\caption[Partition of matrix and vectors among $ m $ and $ n $]{Partition of matrix and vectors among $ m $ and $ n $, with $ N $ the number of nodes. This is a intuitive division, but is not going to be the chosen one because we want to order by nodes and not by fields. Nevertheless this is a useful way to imagine it; indeed when we compute the matrix, we will do it with each block separately. For working with the matrix as it is structure in this way, even if it is no, we implemented variables of type \texttt{ordering} that do this job. }
+	\caption[Partition of matrix and vectors among $ m $ and $ n $]{Partition of matrix and vectors among $ m $ and $ n $, with $ N $ the number of mesh's nodes. This is an intuitive division, but is not going to be the chosen one because we want to order by nodes and not by fields. Nevertheless this is an useful way to imagine it; indeed when we compute the matrix, we will do it with each block separately. For working with the matrix as it is structure in this way, even if it is not, we implemented variables of type \texttt{ordering} that do this job. }
 	\label{A_m_n}
 \end{figure}
 \begin{figure}[h]
